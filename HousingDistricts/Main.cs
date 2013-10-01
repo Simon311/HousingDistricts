@@ -201,7 +201,7 @@ namespace HousingDistricts
                                             {
                                                 if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
                                                 {
-                                                    player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
+                                                    player.TSPlayer.Teleport((int)player.LastTilePos.X*16, (int)player.LastTilePos.Y*16);
                                                     player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.LightSeaGreen);
                                                 }
                                             }
