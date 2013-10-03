@@ -87,6 +87,11 @@ namespace HousingDistricts
                                                 return;
                                             }
                                         }
+                                        if (newHouseR.Intersects(new Rectangle(Main.spawnTileX, Main.spawnTileY, 1, 1)))
+                                        {
+                                                ply.SendErrorMessage("Your selected area overlaps spawnpoint, which is not allowed.");
+                                                return;
+                                        }
                                         if (HouseTools.AddHouse(x, y, width, height, houseName, ply.UserID.ToString(), 0, 0))
                                         {
                                             ply.TempPoints[0] = Point.Zero;
@@ -368,6 +373,35 @@ namespace HousingDistricts
                         }
                         break;
                     }
+                case "lock":
+                    {
+                        if (ply.Group.HasPermission("house.lock"))
+                        {
+                            if (args.Parameters.Count > 1)
+                            {
+                                string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
+                                var house = HouseTools.GetHouseByName(houseName);
+                                if (house == null) { ply.SendErrorMessage("No such house!"); return; }
+
+                                if (HTools.OwnsHouse(ply.UserID.ToString(), house))
+                                {
+                                    bool locked = HouseTools.ChangeLock(house);
+                                    ply.SendMessage("House: " + houseName + (locked ? " locked" : " unlocked"), Color.Yellow);
+                                }
+                                else
+                                    ply.SendErrorMessage("You do not own House: " + houseName);
+                            }
+                            else
+                            {
+                                ply.SendErrorMessage("Invalid syntax! Proper syntax: /house lock [house]");
+                            }
+                        }
+                        else
+                        {
+                            ply.SendErrorMessage("You do not have access to that command.");
+                        }
+                        break;
+                    }
                 case "owner":
                     {
                         if (args.Parameters.Count > 1)
@@ -386,6 +420,11 @@ namespace HousingDistricts
                         {
                             ply.SendErrorMessage("Invalid syntax! Proper syntax: /house owner [house-name]");
                         }
+                        break;
+                    }
+                case "reload":
+                    {
+                        if (ply.Group.HasPermission("house.root")) { HouseReload(args); }
                         break;
                     }
                 case "chat":
@@ -502,39 +541,6 @@ namespace HousingDistricts
                 }
             }
             else { args.Player.SendErrorMessage("No need for that ;)"); }
-        }
-
-        public static void ChangeLock(CommandArgs args)
-        {
-            if (args.Parameters.Count > 0)
-            {
-                string houseName = "";
-
-                for (int i = 0; i < args.Parameters.Count; i++)
-                {
-                    if (houseName == "")
-                    {
-                        houseName = args.Parameters[i];
-                    }
-                    else
-                    {
-                        houseName = houseName + " " + args.Parameters[i];
-                    }
-                }
-
-                var house = HouseTools.GetHouseByName(houseName);
-                if (house == null) { args.Player.SendErrorMessage("No such house!"); return; }
-
-                if (HTools.OwnsHouse(args.Player.UserID.ToString(), house))
-                {
-                    bool locked = HouseTools.ChangeLock(house);
-                    args.Player.SendMessage("House: " + houseName + (locked ? " locked" : " unlocked"), Color.Yellow);
-                }
-                else
-                    args.Player.SendErrorMessage("You do not own House: " + houseName);
-            }
-            else
-                args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /changelock [house]");
         }
 
         public static void HouseReload(CommandArgs args)

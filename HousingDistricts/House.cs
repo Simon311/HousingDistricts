@@ -64,7 +64,6 @@ namespace HousingDistricts
         {
             var house = GetHouseByName(houseName);
             if (house == null) { return false; }
-            Log.Info((house == null).ToString());
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Owners.Add(id);
@@ -152,10 +151,6 @@ namespace HousingDistricts
                 locked = false;
 
             house.Locked = locked ? 1 : 0;
-
-            /*List<SqlValue> values = new List<SqlValue>();
-            values.Add(new SqlValue("Locked", locked ? 1 : 0));
-            HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, new List<SqlValue>());*/
 
             try
             {

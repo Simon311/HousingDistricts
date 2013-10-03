@@ -89,10 +89,9 @@ namespace HousingDistricts
         {
             try
             {
-                if (house.Owners.Contains(UserID))
+                if (house.Owners.Contains(UserID) || TShock.Groups.GetGroupByName(TShock.Users.GetUserByID(Convert.ToInt32(UserID)).Group).HasPermission("house.root"))
                 {
                     return true;
-
                 }
                 else
                 {
@@ -108,12 +107,7 @@ namespace HousingDistricts
 
         public static bool CanVisitHouse(string UserID, House house)
         {
-            foreach (string visitor in house.Visitors)
-            {
-                if (visitor == UserID)
-                    return true;
-            }
-            return false;
+            return house.Visitors.Contains(UserID); 
         }
 
         public static HPlayer GetPlayerByID(int id)

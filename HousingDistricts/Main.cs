@@ -154,7 +154,6 @@ namespace HousingDistricts
 
             #region Commands
             Commands.ChatCommands.Add(new Command("house.use", HCommands.House, "house"));
-            Commands.ChatCommands.Add(new Command("house.lock", HCommands.ChangeLock, "changelock"));
             Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
             Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseReload, "housereload"));
             #endregion
@@ -168,8 +167,6 @@ namespace HousingDistricts
             else
               PrevUpdateTime = DateTime.Now;
 
-            if (HConfig.NotifyOnEntry || HConfig.NotifyOnExit)
-            {
                 lock (HPlayers)
                 {
                     foreach (HPlayer player in HPlayers)
@@ -182,8 +179,6 @@ namespace HousingDistricts
                             {
                                 try
                                 {
-                                    if (HConfig.NotifyOnEntry)
-                                    {
                                         if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
                                         {
                                             if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("house.enterlocked"))
@@ -196,7 +191,7 @@ namespace HousingDistricts
                                             }
                                             else
                                             {
-                                                if (!player.CurHouses.Contains(house.Name))
+                                                if (!player.CurHouses.Contains(house.Name) && HConfig.NotifyOnEntry)
                                                 {
                                                     NewCurHouses.Add(house.Name);
                                                     if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
@@ -214,7 +209,7 @@ namespace HousingDistricts
                                             NewCurHouses.Remove(house.Name);
                                             HousesNotIn++;
                                         }
-                                    }
+                                    
                                 }
                                 catch (Exception ex)
                                 {
@@ -252,7 +247,8 @@ namespace HousingDistricts
                         player.LastTilePos = new Vector2(player.TSPlayer.TileX, player.TSPlayer.TileY);
                     }
                 }
-            }
+            
+
         }
         public void OnChat(ServerChatEventArgs e)
         {
