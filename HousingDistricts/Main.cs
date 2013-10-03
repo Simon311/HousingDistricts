@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Terraria;
+using TerrariaApi.Server;
+using MySql.Data.MySqlClient;
 using TShockAPI;
 using TShockAPI.DB;
-using MySql.Data.MySqlClient;
-using System.Threading;
-using System.ComponentModel;
 using System.IO;
-using System.Data;
-using System.Reflection;
-using TerrariaApi.Server;
 
 namespace HousingDistricts
 {
@@ -17,8 +13,6 @@ namespace HousingDistricts
     public class HousingDistricts : TerrariaPlugin
     {
         public static HConfigFile HConfig { get; set; }
-        public static SqlTableEditor SQLEditor;
-        public static SqlTableCreator SQLWriter;
         public static List<House> Houses = new List<House>();
         public static List<HPlayer> HPlayers = new List<HPlayer>();
 
@@ -28,36 +22,35 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "By Twitchy, Dingo, radishes, CoderCow and B4"; }
+            get { return "By Twitchy, Dingo, radishes, CoderCow and B4"; } // return "By Community";
         }
         public override string Description
         {
-            get { return "Housing Districts 2.0"; } // Why not? :D
+            get { return "Housing Districts 2.0"; }
         }
         public override Version Version
         {
-            get { return new Version(1, 9, 9, 9); } // Because beta.
+            get { return new Version(2,0); }
         }
 
         public override void Initialize()
         {
             HTools.SetupConfig();
 
-            ServerApi.Hooks.GameInitialize.Register(this, (args) => { OnInitialize(); });
-            ServerApi.Hooks.GameUpdate.Register(this, (args) => { OnUpdate(); });
+            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+            ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
             ServerApi.Hooks.ServerChat.Register(this, OnChat);
             ServerApi.Hooks.NetGreetPlayer.Register(this, OnGreetPlayer);
             ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
             ServerApi.Hooks.NetGetData.Register(this, GetData);
-
             GetDataHandlers.InitGetDataHandler();
         }
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                ServerApi.Hooks.GameInitialize.Deregister(this, (args) => { OnInitialize(); });
-                ServerApi.Hooks.GameUpdate.Deregister(this, (args) => { OnUpdate(); });
+                ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
+                ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
                 ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
                 ServerApi.Hooks.NetGreetPlayer.Deregister(this, OnGreetPlayer);
                 ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
@@ -70,14 +63,10 @@ namespace HousingDistricts
         {
             HConfig = new HConfigFile();
             Order = 5;
-            // Apparently we've got inversed order here (used to be -5).
         }
 
-        public void OnInitialize()
+        public void OnInitialize(EventArgs e)
         {
-            SQLEditor = new SqlTableEditor(TShock.DB, TShock.DB.GetSqlType() == SqlType.Sqlite ? (IQueryBuilder)new SqliteQueryCreator() : new MysqlQueryCreator());
-            SQLWriter = new SqlTableCreator(TShock.DB, TShock.DB.GetSqlType() == SqlType.Sqlite ? (IQueryBuilder)new SqliteQueryCreator() : new MysqlQueryCreator());
-
             #region Setup
             bool sethouse = false;
             bool edithouse = false;
@@ -141,6 +130,7 @@ namespace HousingDistricts
                 new SqlColumn("ChatEnabled", MySqlDbType.Int32),
                 new SqlColumn("Visitors", MySqlDbType.Text)
             );
+            var SQLWriter = new SqlTableCreator(TShock.DB, TShock.DB.GetSqlType() == SqlType.Sqlite ? (IQueryBuilder)new SqliteQueryCreator() : new MysqlQueryCreator());
             SQLWriter.EnsureExists(table);
         	var reader = TShock.DB.QueryReader("Select * from HousingDistrict");
 			while( reader.Read() )
@@ -164,7 +154,6 @@ namespace HousingDistricts
 
             #region Commands
             Commands.ChatCommands.Add(new Command("house.use", HCommands.House, "house"));
-            Commands.ChatCommands.Add(new Command("house.root", HCommands.Convert, "converthouse"));
             Commands.ChatCommands.Add(new Command("house.lock", HCommands.ChangeLock, "changelock"));
             Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
             Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseReload, "housereload"));
@@ -172,7 +161,7 @@ namespace HousingDistricts
         }
 
         private DateTime PrevUpdateTime;
-        public void OnUpdate()
+        public void OnUpdate(EventArgs e)
         {
             if (DateTime.Now < PrevUpdateTime + TimeSpan.FromMilliseconds(500))
                 return;
@@ -242,7 +231,6 @@ namespace HousingDistricts
 
                         if (HConfig.NotifyOnExit)
                         {
-                          //  if (HousesNotIn == HousingDistricts.Houses.Count)
                             {
                                 foreach (string cHouse in player.CurHouses)
                                 {
@@ -255,7 +243,6 @@ namespace HousingDistricts
                                             player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
                                             HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
                                         }
-                                        // NewCurHouses.Remove(cHouse);
                                     }
                                 }
                             }

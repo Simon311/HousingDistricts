@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Drawing;
 using TShockAPI;
 using Terraria;
 
@@ -36,7 +35,7 @@ namespace HousingDistricts
         {
             foreach (HPlayer player in HousingDistricts.HPlayers)
             {
-                if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)))
+                if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
                 {
                     player.TSPlayer.SendMessage("<House> <" + playername + ">: " + text, Color.LightSkyBlue);
                 }
@@ -90,12 +89,15 @@ namespace HousingDistricts
         {
             try
             {
-                foreach (string owner in house.Owners)
+                if (house.Owners.Contains(UserID))
                 {
-                    if (owner == UserID)
-                        return true;
+                    return true;
+
                 }
-                return false;
+                else
+                {
+                    return false;
+                }
             }
             catch (Exception ex)
             {

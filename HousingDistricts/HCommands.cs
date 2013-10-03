@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.IO;
 using TShockAPI;
 using TShockAPI.DB;
 using Terraria;
@@ -97,7 +96,8 @@ namespace HousingDistricts
                                         }
                                         else
                                         {
-                                            ply.SendErrorMessage("House " + houseName + " already exists");
+                                            var WM = HouseTools.WorldMismatch(HouseTools.GetHouseByName(houseName)) ? " with a different WorldID!" : "";
+                                            ply.SendErrorMessage("House " + houseName + " already exists" + WM);
                                         }
                                     }
                                     else
@@ -146,6 +146,7 @@ namespace HousingDistricts
                             string playerName = args.Parameters[1];
                             User playerID;
                             var house = HouseTools.GetHouseByName(String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 2)));
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
                             string houseName = house.Name;
                             if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
                             {
@@ -178,11 +179,17 @@ namespace HousingDistricts
                         {
                             string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
                             var house = HouseTools.GetHouseByName(houseName);
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
                             if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
                             {
-                                List<SqlValue> where = new List<SqlValue>();
-                                where.Add(new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"));
-                                HousingDistricts.SQLWriter.DeleteRow("HousingDistrict", where);
+                                try
+                                {
+                                    TShock.DB.Query("DELETE FROM HousingDistrict WHERE Name=@0", houseName.Replace("'", "''"));
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Error(ex.ToString());
+                                }
                                 HousingDistricts.Houses.Remove(house);
                                 ply.SendMessage("House: " + houseName + " deleted", Color.Yellow);
                                 break;
@@ -202,7 +209,7 @@ namespace HousingDistricts
                         ply.TempPoints[0] = Point.Zero;
                         ply.TempPoints[1] = Point.Zero;
                         ply.AwaitingTempPoint = 0;
-                        ply.SendMessage("Cleared temp area", Color.Yellow);
+                        ply.SendMessage("Cleared points!", Color.Yellow);
                         break;
                     }
                 case "list":
@@ -238,7 +245,7 @@ namespace HousingDistricts
                         // Are there even any houses to display?
                         if (houses.Count == 0)
                         {
-                            ply.SendErrorMessage("There are currently no houses defined.");
+                            ply.SendMessage("There are currently no houses defined.", Color.Yellow);
                             return;
                         }
 
@@ -349,13 +356,15 @@ namespace HousingDistricts
                         break;
                     }
                 case "debug":
-                    { // This is just here for... I have no idea really :)
+                    { // This is here for World Mismatch :D
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
                             ply.SendMessage("House '" + house.Name + "':", Color.LawnGreen);
                             ply.SendMessage("Chat enabled: " + house.ChatEnabled.ToString(), Color.LawnGreen);
                             ply.SendMessage("Owner IDs: " + String.Join(", ",house.Owners.ToArray()), Color.LawnGreen);
+                            ply.SendMessage("World Mismatch: " + HouseTools.WorldMismatch(house).ToString(), Color.LawnGreen);
                         }
                         break;
                     }
@@ -364,6 +373,7 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
                             string OwnerNames = "";
                             foreach (string ID in house.Owners)
                             {
@@ -383,6 +393,7 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
                             if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name))
                             {
                                 if (args.Parameters.Count > 2)
@@ -426,6 +437,7 @@ namespace HousingDistricts
                             string playerName = args.Parameters[1];
                             User playerID;
                             var house = HouseTools.GetHouseByName(args.Parameters[2]);
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
                             string houseName = house.Name;
                             if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
                             {
@@ -433,7 +445,7 @@ namespace HousingDistricts
                                 {
                                     if (HouseTools.AddNewVisitor(house, playerID.ID.ToString()))
                                     {
-                                        ply.SendMessage("Added user " + playerName + " to " + houseName + "as a visitor.", Color.Yellow);
+                                        ply.SendMessage("Added user " + playerName + " to " + houseName + " as a visitor.", Color.Yellow);
                                     }
                                     else
                                         ply.SendErrorMessage("House " + houseName + " not found");
@@ -492,18 +504,6 @@ namespace HousingDistricts
             else { args.Player.SendErrorMessage("No need for that ;)"); }
         }
 
-        public static void Convert(CommandArgs args)
-        {
-            List<SqlValue> value = new List<SqlValue>();
-            value.Add(new SqlValue("WorldID", "'" + Main.worldID.ToString() + "'"));
-            HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", value, new List<SqlValue>());
-
-            foreach (House house in HousingDistricts.Houses)
-            {
-                house.WorldID = Main.worldID.ToString();
-            }
-        }
-
         public static void ChangeLock(CommandArgs args)
         {
             if (args.Parameters.Count > 0)
@@ -522,9 +522,12 @@ namespace HousingDistricts
                     }
                 }
 
-                if (HTools.OwnsHouse(args.Player.UserID.ToString(), houseName))
+                var house = HouseTools.GetHouseByName(houseName);
+                if (house == null) { args.Player.SendErrorMessage("No such house!"); return; }
+
+                if (HTools.OwnsHouse(args.Player.UserID.ToString(), house))
                 {
-                    bool locked = HouseTools.ChangeLock(houseName);
+                    bool locked = HouseTools.ChangeLock(house);
                     args.Player.SendMessage("House: " + houseName + (locked ? " locked" : " unlocked"), Color.Yellow);
                 }
                 else
@@ -537,8 +540,29 @@ namespace HousingDistricts
         public static void HouseReload(CommandArgs args)
         {
             HTools.SetupConfig();
-            Log.Info("House Reload Initiated");
-            args.Player.SendMessage("House Reload Initiated", Color.Lime);
+            var reader = TShock.DB.QueryReader("Select * from HousingDistrict");
+            Log.Info("House Config Reloaded");
+            args.Player.SendMessage("House Config Reloaded", Color.Lime);
+            HousingDistricts.Houses = new List<House>();
+            while (reader.Read())
+            {
+                int id = reader.Get<int>("ID");
+                string[] list = reader.Get<string>("Owners").Split(',');
+                List<string> owners = new List<string>();
+                foreach (string i in list)
+                    owners.Add(i);
+                int locked = reader.Get<int>("Locked");
+                int chatenabled;
+                if (reader.Get<int>("ChatEnabled") == 1) { chatenabled = 1; }
+                else { chatenabled = 0; }
+                List<string> visitors = new List<string>();
+                foreach (string i in list)
+                    visitors.Add(i);
+                HousingDistricts.Houses.Add(new House(new Rectangle(reader.Get<int>("TopX"), reader.Get<int>("TopY"), reader.Get<int>("BottomX"), reader.Get<int>("BottomY")),
+                    owners, id, reader.Get<string>("Name"), reader.Get<string>("WorldID"), locked, chatenabled, visitors));
+            }
+            Log.Info("Houses Reloaded");
+            args.Player.SendMessage("Houses Reloaded", Color.Lime);
         }
     }
 }

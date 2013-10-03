@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Terraria;
 using TShockAPI;
 using TShockAPI.Net;
 using System.IO.Streams;
-using System.Linq;
 
 namespace HousingDistricts
 {
@@ -125,13 +123,6 @@ namespace HousingDistricts
                 {
                     args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
                 }
-
-                /*
-                  if (!args.Player.TempPoints.Any(p => p == Point.Zero))
-                  {
-                    args.Player.SendMessage("Top-left and bottom-right points are both set", Color.Yellow);
-                  }
-                 */
 
                 args.Player.SendTileSquare(x, y);
                 args.Player.AwaitingTempPoint = 0;
