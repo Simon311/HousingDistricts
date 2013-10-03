@@ -46,7 +46,7 @@ namespace HousingDistricts
             cols.Add("Locked");
             cols.Add("ChatEnabled");
             cols.Add("Visitors");
-
+            if (GetHouseByName(housename) != null) { return false; }
             try
             {
                 TShock.DB.Query("INSERT INTO HousingDistrict (" + String.Join(", ", cols) + ") VALUES (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9);", housename.Replace("'", "''"), tx, ty, width, height, "0", Main.worldID.ToString(), locked, chatenabled, "0");
