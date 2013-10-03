@@ -91,6 +91,40 @@ namespace HousingDistricts
             return true;
         }
 
+        public static bool DeleteUser(string houseName, string id)
+        {
+            var house = GetHouseByName(houseName);
+            if (house == null) { return false; }
+            StringBuilder sb = new StringBuilder();
+            int count = 0;
+            while (house.Owners.Contains(id))
+            {
+                house.Owners.Remove(id);
+            }
+            foreach (string owner in house.Owners)
+            {
+                count++;
+                sb.Append(owner);
+                if (count != house.Owners.Count)
+                    sb.Append(",");
+            }
+            sb.Replace("'", "''");
+
+            try
+            {
+                string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
+
+                TShock.DB.Query(query, sb.ToString(), houseName.Replace("'", "''"));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool WorldMismatch(House house)
         {
             return (house.WorldID != Main.worldID.ToString());
@@ -124,6 +158,39 @@ namespace HousingDistricts
 
             return true;
         }
+
+        public static bool DeleteVisitor(House house, string id)
+        {
+            StringBuilder sb = new StringBuilder();
+            int count = 0;
+            while (house.Visitors.Contains(id))
+            {
+                house.Visitors.Remove(id);
+            }
+            foreach (string visitor in house.Visitors)
+            {
+                count++;
+                sb.Append(visitor);
+                if (count != house.Visitors.Count)
+                    sb.Append(",");
+            }
+            sb.Replace("'", "''");
+
+            try
+            {
+                string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
+
+                TShock.DB.Query(query, sb.ToString(), house.Name.Replace("'", "''"));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool ToggleChat(House house, int onOrOff)
         {
             house.ChatEnabled = onOrOff;

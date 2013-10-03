@@ -107,7 +107,7 @@ namespace HousingDistricts
 
         public static bool CanVisitHouse(string UserID, House house)
         {
-            return house.Visitors.Contains(UserID); 
+            return house.Visitors.Contains(UserID) | house.Owners.Contains(UserID); 
         }
 
         public static HPlayer GetPlayerByID(int id)

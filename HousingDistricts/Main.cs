@@ -30,7 +30,7 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(2,0); }
+            get { return new Version(2, 0, 1); }
         }
 
         public override void Initialize()
@@ -183,7 +183,7 @@ namespace HousingDistricts
                                         {
                                             if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("house.enterlocked"))
                                             {
-                                                if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
+                                                if (!HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
                                                 {
                                                     player.TSPlayer.Teleport((int)player.LastTilePos.X*16, (int)player.LastTilePos.Y*16);
                                                     player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.LightSeaGreen);

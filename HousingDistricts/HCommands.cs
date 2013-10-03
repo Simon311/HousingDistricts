@@ -157,9 +157,50 @@ namespace HousingDistricts
                             {
                                 if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
                                 {
-                                    if (HouseTools.AddNewUser(houseName, playerID.ID.ToString()))
+                                    if (!HTools.OwnsHouse(playerID.ID.ToString(), house))
                                     {
-                                        ply.SendMessage("Added user " + playerName + " to " + houseName, Color.Yellow);
+                                        if (HouseTools.AddNewUser(houseName, playerID.ID.ToString()))
+                                        {
+                                            ply.SendMessage("Added user " + playerName + " to " + houseName, Color.Yellow);
+                                        }
+                                        else
+                                            ply.SendErrorMessage("House " + houseName + " not found");
+                                    }
+                                    else
+                                    {
+                                        ply.SendErrorMessage("Player " + playerName + " is already allowed to build in '" + house.Name + "'.");
+                                    }
+                                }
+                                else
+                                {
+                                    ply.SendErrorMessage("Player " + playerName + " not found");
+                                }
+                            }
+                            else
+                            {
+                                ply.SendErrorMessage("You do not own house: " + houseName);
+                            }
+                        }
+                        else
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house allow [name] [house]");
+                        break;
+                    }
+                case "disallow":
+                    {
+                        if (args.Parameters.Count > 2)
+                        {
+                            string playerName = args.Parameters[1];
+                            User playerID;
+                            var house = HouseTools.GetHouseByName(String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 2)));
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
+                            string houseName = house.Name;
+                            if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
+                            {
+                                if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
+                                {
+                                    if (HouseTools.DeleteUser(houseName, playerID.ID.ToString()))
+                                    {
+                                        ply.SendMessage("Deleted user " + playerName + " from " + houseName, Color.Yellow);
                                     }
                                     else
                                         ply.SendErrorMessage("House " + houseName + " not found");
@@ -175,7 +216,7 @@ namespace HousingDistricts
                             }
                         }
                         else
-                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house allow [name] [house]");
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house disallow [name] [house]");
                         break;
                     }
                 case "delete":
@@ -310,6 +351,11 @@ namespace HousingDistricts
                                                 return;
                                             }
                                         }
+                                        if (newHouseR.Intersects(new Rectangle(Main.spawnTileX, Main.spawnTileY, 1, 1)))
+                                        {
+                                            ply.SendErrorMessage("Your selected area overlaps spawnpoint, which is not allowed.");
+                                            return;
+                                        }
                                         if (HouseTools.RedefineHouse(x, y, width, height, houseName))
                                         {
                                             ply.TempPoints[0] = Point.Zero;
@@ -402,7 +448,7 @@ namespace HousingDistricts
                         }
                         break;
                     }
-                case "owner":
+                case "owners":
                     {
                         if (args.Parameters.Count > 1)
                         {
@@ -411,14 +457,44 @@ namespace HousingDistricts
                             string OwnerNames = "";
                             foreach (string ID in house.Owners)
                             {
-                                if (OwnerNames == "") { OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
-                                else { OwnerNames = OwnerNames + ", " + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                                try
+                                {
+                                    if (OwnerNames == "") { OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                                    else { OwnerNames = OwnerNames + ", " + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                                }
+                                catch
+                                { }
                             }
                             ply.SendMessage(String.Format("House '{0}' owners: {1}", house.Name, OwnerNames), Color.Lime);
                         }
                         else
                         {
                             ply.SendErrorMessage("Invalid syntax! Proper syntax: /house owner [house-name]");
+                        }
+                        break;
+                    }
+                case "visitors":
+                    {
+                        if (args.Parameters.Count > 1)
+                        {
+                            var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
+                            string OwnerNames = "";
+                            foreach (string ID in house.Visitors)
+                            {
+                                try
+                                {
+                                    if (OwnerNames == "") { OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                                    else { OwnerNames = OwnerNames + ", " + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                                }
+                                catch
+                                { }
+                            }
+                            ply.SendMessage(String.Format("House '{0}' visitors: {1}", house.Name, OwnerNames), Color.Lime);
+                        }
+                        else
+                        {
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house visitors [house-name]");
                         }
                         break;
                     }
@@ -482,7 +558,48 @@ namespace HousingDistricts
                             {
                                 if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
                                 {
-                                    if (HouseTools.AddNewVisitor(house, playerID.ID.ToString()))
+                                    if (!HTools.CanVisitHouse(playerID.ID.ToString(), house))
+                                    {
+                                        if (HouseTools.AddNewVisitor(house, playerID.ID.ToString()))
+                                        {
+                                            ply.SendMessage("Added user " + playerName + " to " + houseName + " as a visitor.", Color.Yellow);
+                                        }
+                                        else
+                                            ply.SendErrorMessage("House " + houseName + " not found");
+                                    }
+                                    else
+                                    {
+                                        ply.SendErrorMessage("Player " + playerName + " is already allowed to visit '" + house.Name + "'.");
+                                    }
+                                }
+                                else
+                                {
+                                    ply.SendErrorMessage("Player " + playerName + " not found");
+                                }
+                            }
+                            else
+                            {
+                                ply.SendErrorMessage("You do not own house: " + houseName);
+                            }
+                        }
+                        else
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house addvisitor [name] [house]");
+                        break;
+                    }
+                case "delvisitor":
+                    {
+                        if (args.Parameters.Count > 2)
+                        {
+                            string playerName = args.Parameters[1];
+                            User playerID;
+                            var house = HouseTools.GetHouseByName(args.Parameters[2]);
+                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
+                            string houseName = house.Name;
+                            if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
+                            {
+                                if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
+                                {
+                                    if (HouseTools.DeleteVisitor(house, playerID.ID.ToString()))
                                     {
                                         ply.SendMessage("Added user " + playerName + " to " + houseName + " as a visitor.", Color.Yellow);
                                     }
@@ -500,7 +617,7 @@ namespace HousingDistricts
                             }
                         }
                         else
-                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house addvisitor [name] [house]");
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house delvisitor [name] [house]");
                         break;
                     }
                 default:
@@ -509,7 +626,8 @@ namespace HousingDistricts
                         ply.SendMessage("/house set 1", Color.Lime);
                         ply.SendMessage("/house set 2", Color.Lime);
                         ply.SendMessage("/house add HouseName", Color.Lime);
-                        ply.SendMessage("Other /house commands: list, allow, name, delete, clear, owner", Color.Lime);
+                        ply.SendMessage("Other /house commands: list, allow, disallow, name, delete, clear, owners,", Color.Lime);
+                        ply.SendMessage("                           visitors, addvisitor, delvisitor, lock, reload, debug", Color.Lime);
                         break;
                     }
             }
