@@ -154,7 +154,7 @@ namespace HousingDistricts
 
             #region Commands
             Commands.ChatCommands.Add(new Command("house.use", HCommands.House, "house"));
-            Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
+            Commands.ChatCommands.Add(new Command("tshock.canchat", HCommands.TellAll, "all"));
             Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseReload, "housereload"));
             Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseWipe, "housewipe"));
             #endregion
