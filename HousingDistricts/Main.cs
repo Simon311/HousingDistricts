@@ -30,7 +30,7 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(2, 0, 1); }
+            get { return new Version(2, 0, 1, 1); }
         }
 
         public override void Initialize()
@@ -156,6 +156,7 @@ namespace HousingDistricts
             Commands.ChatCommands.Add(new Command("house.use", HCommands.House, "house"));
             Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
             Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseReload, "housereload"));
+            Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseWipe, "housewipe"));
             #endregion
         }
 

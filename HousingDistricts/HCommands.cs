@@ -89,7 +89,7 @@ namespace HousingDistricts
                                         }
                                         if (newHouseR.Intersects(new Rectangle(Main.spawnTileX, Main.spawnTileY, 1, 1)))
                                         {
-                                                ply.SendErrorMessage("Your selected area overlaps spawnpoint, which is not allowed.");
+                                                ply.SendErrorMessage("Your selected area overlaps spawnpoint, which is not allowed."); // Will make it check if it Intersects regions later
                                                 return;
                                         }
                                         if (HouseTools.AddHouse(x, y, width, height, houseName, ply.UserID.ToString(), 0, 0))
@@ -687,6 +687,26 @@ namespace HousingDistricts
             }
             Log.Info("Houses Reloaded");
             args.Player.SendMessage("Houses Reloaded", Color.Lime);
+        }
+        public static void HouseWipe(CommandArgs args)
+        {
+            if (args.Parameters.Contains("true"))
+            {
+                HousingDistricts.Houses.Clear();
+                try
+                {
+                    TShock.DB.Query("DELETE FROM HousingDistrict;");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.ToString());
+                }
+                args.Player.SendMessage("All houses deleted!", Color.Lime);
+            }
+            else
+            {
+                args.Player.SendMessage("Do '/housewipe true' to confirm wipe.", Color.Lime);
+            }
         }
     }
 }
