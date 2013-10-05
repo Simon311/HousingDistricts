@@ -32,6 +32,11 @@ namespace HousingDistricts
                     }
                 case "set":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         int choice = 0;
                         if (args.Parameters.Count == 2 &&
                             int.TryParse(args.Parameters[1], out choice) &&
@@ -51,6 +56,11 @@ namespace HousingDistricts
                     }
                 case "add":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 1)
                         {
                             List<int> userOwnedHouses = new List<int>();
@@ -71,6 +81,12 @@ namespace HousingDistricts
                                 if (!ply.TempPoints.Any(p => p == Point.Zero))
                                 {
                                     string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
+
+                                    if (String.IsNullOrEmpty(houseName))
+                                    {
+                                        ply.SendErrorMessage("House name cannot be empty.");
+                                        return;
+                                    }
 
                                     var x = Math.Min(ply.TempPoints[0].X, ply.TempPoints[1].X);
                                     var y = Math.Min(ply.TempPoints[0].Y, ply.TempPoints[1].Y);
@@ -146,6 +162,11 @@ namespace HousingDistricts
                     }
                 case "allow":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 2)
                         {
                             string playerName = args.Parameters[1];
@@ -187,6 +208,11 @@ namespace HousingDistricts
                     }
                 case "disallow":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 2)
                         {
                             string playerName = args.Parameters[1];
@@ -221,6 +247,11 @@ namespace HousingDistricts
                     }
                 case "delete":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 1)
                         {
                             string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
@@ -328,6 +359,11 @@ namespace HousingDistricts
                     }
                 case "redefine":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 1)
                         {
                             if (!ply.TempPoints.Any(p => p == Point.Zero))
@@ -408,6 +444,10 @@ namespace HousingDistricts
                     }
                 case "debug":
                     { // This is here for World Mismatch :D
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            return;
+                        }
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
@@ -421,6 +461,11 @@ namespace HousingDistricts
                     }
                 case "lock":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (ply.Group.HasPermission("house.lock"))
                         {
                             if (args.Parameters.Count > 1)
@@ -505,6 +550,11 @@ namespace HousingDistricts
                     }
                 case "chat":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
@@ -547,6 +597,11 @@ namespace HousingDistricts
                     }
                 case "addvisitor":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 2)
                         {
                             string playerName = args.Parameters[1];
@@ -588,6 +643,11 @@ namespace HousingDistricts
                     }
                 case "delvisitor":
                     {
+                        if (!ply.IsLoggedIn || ply.UserID == 0)
+                        {
+                            ply.SendErrorMessage("You must log-in to use House Protection.");
+                            return;
+                        }
                         if (args.Parameters.Count > 2)
                         {
                             string playerName = args.Parameters[1];

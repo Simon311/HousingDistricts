@@ -30,7 +30,7 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(2, 0, 1, 1); }
+            get { return new Version(2, 0, 1, 2); }
         }
 
         public override void Initialize()

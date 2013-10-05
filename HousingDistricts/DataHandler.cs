@@ -71,7 +71,15 @@ namespace HousingDistricts
                 {
                     foreach (House house in HousingDistricts.Houses)
                     {
-                        if (house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
+                        if (house == null)
+                        {
+                            Log.Info("Null house detected @ HandleSendTileSquare");
+                            while (HousingDistricts.Houses.Contains(null))
+                            {
+                                HousingDistricts.Houses.Remove(null);
+                            }
+                        }
+                        if (house != null & house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
                             {
@@ -135,6 +143,14 @@ namespace HousingDistricts
                 {
                     foreach (House house in HousingDistricts.Houses)
                     {
+                        if (house == null)
+                        {
+                            Log.Info("Null house detected @ HandleTile");
+                            while (HousingDistricts.Houses.Contains(null))
+                            {
+                                HousingDistricts.Houses.Remove(null);
+                            }
+                        }
                         if (house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
@@ -164,6 +180,14 @@ namespace HousingDistricts
                 {
                     foreach (House house in HousingDistricts.Houses)
                     {
+                        if (house == null)
+                        {
+                            Log.Info("Null house detected @ HandleLiquid");
+                            while (HousingDistricts.Houses.Contains(null))
+                            {
+                                HousingDistricts.Houses.Remove(null);
+                            }
+                        }
                         if (house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
@@ -225,6 +249,14 @@ namespace HousingDistricts
                 {
                     foreach (House house in HousingDistricts.Houses)
                     {
+                        if (house == null)
+                        {
+                            Log.Info("Null house detected @ HandleTileKill");
+                            while (HousingDistricts.Houses.Contains(null))
+                            {
+                                HousingDistricts.Houses.Remove(null);
+                            }
+                        }
                         if (house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))

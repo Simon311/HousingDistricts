@@ -266,6 +266,15 @@ namespace HousingDistricts
 
         public static House GetHouseByName(string name)
         {
+            if (name == null || name == String.Empty)
+            {
+                Log.Info("Null housename detected @ GetHouseByName");
+                while (HousingDistricts.Houses.Contains(null))
+                {
+                    HousingDistricts.Houses.Remove(null);
+                }
+                return null;
+            }
             foreach (House house in HousingDistricts.Houses)
             {
                 if (house.Name == name)

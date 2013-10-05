@@ -82,27 +82,36 @@ namespace HousingDistricts
 
         public static bool OwnsHouse(string UserID, string housename)
         {
+            if (UserID == null || UserID == String.Empty || UserID == "0" || housename == null || housename == String.Empty)
+            {
+                return false;
+            }
+            if (HouseTools.GetHouseByName(housename) == null) { return false; }
             return OwnsHouse(UserID, HouseTools.GetHouseByName(housename));
         }
 
         public static bool OwnsHouse(string UserID, House house)
         {
-            try
+            if (UserID != null && UserID != String.Empty && UserID != "0" && house != null)
             {
-                if (house.Owners.Contains(UserID) || TShock.Groups.GetGroupByName(TShock.Users.GetUserByID(Convert.ToInt32(UserID)).Group).HasPermission("house.root"))
+                try
                 {
-                    return true;
+                    if (house.Owners.Contains(UserID) || TShock.Groups.GetGroupByName(TShock.Users.GetUserByID(Convert.ToInt32(UserID)).Group).HasPermission("house.root"))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
+                    Log.Error(ex.ToString());
                     return false;
                 }
             }
-            catch (Exception ex)
-            {
-                Log.Error(ex.ToString());
-                return false;
-            }
+            return false;
         }
 
         public static bool CanVisitHouse(string UserID, House house)
