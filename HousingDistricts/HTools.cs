@@ -92,11 +92,14 @@ namespace HousingDistricts
 
         public static bool OwnsHouse(string UserID, House house)
         {
+            bool isAdmin = false;
+            try { isAdmin = TShock.Groups.GetGroupByName(TShock.Users.GetUserByID(Convert.ToInt32(UserID)).Group).HasPermission("house.root"); }
+            catch {}
             if (UserID != null && UserID != String.Empty && UserID != "0" && house != null)
             {
                 try
                 {
-                    if (house.Owners.Contains(UserID) || TShock.Groups.GetGroupByName(TShock.Users.GetUserByID(Convert.ToInt32(UserID)).Group).HasPermission("house.root"))
+                    if (house.Owners.Contains(UserID) || isAdmin)
                     {
                         return true;
                     }
@@ -116,7 +119,7 @@ namespace HousingDistricts
 
         public static bool CanVisitHouse(string UserID, House house)
         {
-            return house.Visitors.Contains(UserID) | house.Owners.Contains(UserID); 
+            return house.Visitors.Contains(UserID) || house.Owners.Contains(UserID); 
         }
 
         public static HPlayer GetPlayerByID(int id)

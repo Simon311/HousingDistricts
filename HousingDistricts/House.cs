@@ -49,7 +49,7 @@ namespace HousingDistricts
             if (GetHouseByName(housename) != null) { return false; }
             try
             {
-                TShock.DB.Query("INSERT INTO HousingDistrict (" + String.Join(", ", cols) + ") VALUES (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9);", housename.Replace("'", "''"), tx, ty, width, height, "0", Main.worldID.ToString(), locked, chatenabled, "0");
+                TShock.DB.Query("INSERT INTO HousingDistrict (" + String.Join(", ", cols) + ") VALUES (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9);", housename, tx, ty, width, height, "0", Main.worldID.ToString(), locked, chatenabled, "0");
             }
             catch (Exception ex)
             {
@@ -74,13 +74,12 @@ namespace HousingDistricts
                 if(count != house.Owners.Count)
                     sb.Append(",");
             }
-            sb.Replace("'", "''");
 
             try
             {
                 string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
 
-                TShock.DB.Query(query, sb.ToString(), houseName.Replace("'", "''"));
+                TShock.DB.Query(query, sb.ToString(), houseName);
             }
             catch (Exception ex)
             {
@@ -108,13 +107,12 @@ namespace HousingDistricts
                 if (count != house.Owners.Count)
                     sb.Append(",");
             }
-            sb.Replace("'", "''");
 
             try
             {
                 string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
 
-                TShock.DB.Query(query, sb.ToString(), houseName.Replace("'", "''"));
+                TShock.DB.Query(query, sb.ToString(), houseName);
             }
             catch (Exception ex)
             {
@@ -142,13 +140,12 @@ namespace HousingDistricts
                 if (count != house.Visitors.Count)
                     sb.Append(",");
             }
-            sb.Replace("'", "''");
 
             try
             {
                 string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
 
-                TShock.DB.Query(query, sb.ToString(), house.Name.Replace("'", "''"));
+                TShock.DB.Query(query, sb.ToString(), house.Name);
             }
             catch (Exception ex)
             {
@@ -174,13 +171,12 @@ namespace HousingDistricts
                 if (count != house.Visitors.Count)
                     sb.Append(",");
             }
-            sb.Replace("'", "''");
 
             try
             {
                 string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
 
-                TShock.DB.Query(query, sb.ToString(), house.Name.Replace("'", "''"));
+                TShock.DB.Query(query, sb.ToString(), house.Name);
             }
             catch (Exception ex)
             {
@@ -198,7 +194,7 @@ namespace HousingDistricts
             try
             {
                 string query = "UPDATE HousingDistrict SET ChatEnabled=@0 WHERE Name=@1";
-                TShock.DB.Query(query, house.ChatEnabled.ToString(), house.Name.Replace("'", "''"));
+                TShock.DB.Query(query, house.ChatEnabled.ToString(), house.Name);
             }
             catch (Exception ex)
             {
@@ -223,7 +219,7 @@ namespace HousingDistricts
             {
                 string query = "UPDATE HousingDistrict SET Locked=@0 WHERE Name=@1";
 
-                TShock.DB.Query(query, locked ? 1 : 0, house.Name.Replace("'", "''"));
+                TShock.DB.Query(query, locked ? 1 : 0, house.Name);
             }
             catch (Exception ex)
             {
@@ -242,9 +238,9 @@ namespace HousingDistricts
 
                 try
                 {
-                    string query = "UPDATE HousingDistrict SET TopX=@0, TopY=@1, BottomX=@2, BottomY=@3, WorldID=@4 WHERE Name=@1";
+                    string query = "UPDATE HousingDistrict SET TopX=@0, TopY=@1, BottomX=@2, BottomY=@3, WorldID=@4 WHERE Name=@5";
 
-                    TShock.DB.Query(query, tx, ty, width, height, house.Name.Replace("'", "''"), Main.worldID.ToString());
+                    TShock.DB.Query(query, tx, ty, width, height, Main.worldID.ToString(), house.Name);
                 }
                 catch (Exception ex)
                 {
@@ -266,13 +262,8 @@ namespace HousingDistricts
 
         public static House GetHouseByName(string name)
         {
-            if (name == null || name == String.Empty)
+            if (String.IsNullOrEmpty(name))
             {
-                Log.Info("Null housename detected @ GetHouseByName");
-                while (HousingDistricts.Houses.Contains(null))
-                {
-                    HousingDistricts.Houses.Remove(null);
-                }
                 return null;
             }
             foreach (House house in HousingDistricts.Houses)

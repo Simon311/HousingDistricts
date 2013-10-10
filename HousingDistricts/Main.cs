@@ -30,18 +30,18 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(2, 0, 1, 2); }
+            get { return new Version(2, 0, 1, 4); }
         }
 
         public override void Initialize()
         {
             HTools.SetupConfig();
 
-            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
-            ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
-            ServerApi.Hooks.ServerChat.Register(this, OnChat);
-            ServerApi.Hooks.NetGreetPlayer.Register(this, OnGreetPlayer);
-            ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
+            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize, -5);
+            ServerApi.Hooks.GameUpdate.Register(this, OnUpdate, -5);
+            ServerApi.Hooks.ServerChat.Register(this, OnChat, 5);
+            ServerApi.Hooks.NetGreetPlayer.Register(this, OnGreetPlayer, -5);
+            ServerApi.Hooks.ServerLeave.Register(this, OnLeave, 5);
             ServerApi.Hooks.NetGetData.Register(this, GetData);
             GetDataHandlers.InitGetDataHandler();
         }

@@ -261,7 +261,7 @@ namespace HousingDistricts
                             {
                                 try
                                 {
-                                    TShock.DB.Query("DELETE FROM HousingDistrict WHERE Name=@0", houseName.Replace("'", "''"));
+                                    TShock.DB.Query("DELETE FROM HousingDistrict WHERE Name=@0", houseName);
                                 }
                                 catch (Exception ex)
                                 {
