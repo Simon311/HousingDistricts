@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using Terraria;
 using TerrariaApi.Server;
 using MySql.Data.MySqlClient;
@@ -22,7 +23,7 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "By Twitchy, Dingo, radishes, CoderCow and B4"; } // return "By Community";
+            get { return "By Twitchy, Dingo, radishes, CoderCow and B4"; }
         }
         public override string Description
         {
@@ -30,31 +31,47 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(2, 0, 1, 4); }
+            get { return new Version(2, 0, 1, 5); }
         }
+
+		// Done: Update Timer
+		// Done: Manage permissions inside /house
+		// Done: Use for on Houses List instead of foreach
+		// Note: Do NOT replace for, its faster for Lists than Foreach. Yes, there are studies proving that. No, there is no difference for arrays.
+
+		// TODO: Add UUID support
+		// TODO: Add owners+builders instead of just owners
+		// TODO: House count limit specific to groups.
+		// TODO: Make separate NotifyOnEntry/Exit for Players/Owners.
+		// TODO: Check if a house Intersects any admin stuff like regions or warps.
+		// TODO: Add Caching User Info?
+
+
+		static readonly System.Timers.Timer Update = new System.Timers.Timer(500);
 
         public override void Initialize()
         {
             HTools.SetupConfig();
 
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize, -5);
-            ServerApi.Hooks.GameUpdate.Register(this, OnUpdate, -5);
             ServerApi.Hooks.ServerChat.Register(this, OnChat, 5);
             ServerApi.Hooks.NetGreetPlayer.Register(this, OnGreetPlayer, -5);
             ServerApi.Hooks.ServerLeave.Register(this, OnLeave, 5);
             ServerApi.Hooks.NetGetData.Register(this, GetData);
             GetDataHandlers.InitGetDataHandler();
+			Update.Elapsed += OnUpdate;
+			Update.Start();
         }
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
-                ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
                 ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
                 ServerApi.Hooks.NetGreetPlayer.Deregister(this, OnGreetPlayer);
                 ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
                 ServerApi.Hooks.NetGetData.Deregister(this, GetData);
+				Update.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -144,6 +161,7 @@ namespace HousingDistricts
                 int chatenabled;
                 if (reader.Get<int>("ChatEnabled") == 1) { chatenabled = 1; }
                 else { chatenabled = 0; }
+				list = reader.Get<string>("Visitors").Split(',');
                 List<string> visitors = new List<string>();
                 foreach (string i in list)
                     visitors.Add(i);
@@ -152,43 +170,65 @@ namespace HousingDistricts
 			}
             #endregion
 
+			List<string> perms = new List<string>();
+			perms.Add("house.use");
+			perms.Add("house.lock");
+			perms.Add("house.root");
+
             #region Commands
-            Commands.ChatCommands.Add(new Command("house.use", HCommands.House, "house"));
+            Commands.ChatCommands.Add(new Command(perms, HCommands.House, "house"));
             Commands.ChatCommands.Add(new Command("tshock.canchat", HCommands.TellAll, "all"));
             Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseReload, "housereload"));
             Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseWipe, "housewipe"));
             #endregion
         }
 
-        private DateTime PrevUpdateTime;
-        public void OnUpdate(EventArgs e)
+		public void OnUpdate(object sender, ElapsedEventArgs e)
         {
-            if (DateTime.Now < PrevUpdateTime + TimeSpan.FromMilliseconds(500))
-                return;
-            else
-              PrevUpdateTime = DateTime.Now;
-
+			if (Main.worldID == 0) return;
+			var Start = DateTime.Now;
+			if (Main.rand == null) Main.rand = new Random();
                 lock (HPlayers)
                 {
-                    foreach (HPlayer player in HPlayers)
-                    {
+					for (int i = 0; i <= HousingDistricts.HPlayers.Count - 1; i++)
+					{
+						if (Timeout(Start, 2000)) return;
+						if (HPlayers.Count < 1) break;
+						var player = HousingDistricts.HPlayers[i];
                         List<string> NewCurHouses = new List<string>(player.CurHouses);
                         int HousesNotIn = 0;
                         try
                         {
-                            foreach (House house in HousingDistricts.Houses)
-                            {
+							for (int j = 0; j <= HousingDistricts.Houses.Count - 1; j++)
+							{
+								if (Timeout(Start, 2000)) return;
+								if (HousingDistricts.Houses.Count < 1) break;
+								var house = HousingDistricts.Houses[j];
                                 try
                                 {
-                                        if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
+                                        if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && !HouseTools.WorldMismatch(house))
                                         {
                                             if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("house.enterlocked"))
                                             {
-                                                if (!HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
-                                                {
-                                                    player.TSPlayer.Teleport((int)player.LastTilePos.X*16, (int)player.LastTilePos.Y*16);
-                                                    player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.LightSeaGreen);
-                                                }
+												if (!HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
+												{
+													player.TSPlayer.Teleport((int)player.LastTilePos.X * 16, (int)player.LastTilePos.Y * 16);
+													player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.LightSeaGreen);
+												}
+												else
+												{
+													if (!player.CurHouses.Contains(house.Name) && HConfig.NotifyOnEntry)
+													{
+														NewCurHouses.Add(house.Name);
+														if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
+															player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
+														else
+														{
+															player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
+															HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
+														}
+													}
+												}
                                             }
                                             else
                                             {
@@ -228,19 +268,21 @@ namespace HousingDistricts
                         if (HConfig.NotifyOnExit)
                         {
                             {
-                                foreach (string cHouse in player.CurHouses)
-                                {
-                                    if (!NewCurHouses.Contains(cHouse))
-                                    {
-                                        if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), cHouse))
-                                            player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
-                                        else
-                                        {
-                                            player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
-                                            HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
-                                        }
-                                    }
-                                }
+								for (int k = 0; k <= player.CurHouses.Count - 1; k++)
+								{
+									if (player.CurHouses.Count < 1) break;
+									var cHouse = player.CurHouses[k];
+									if (!NewCurHouses.Contains(cHouse))
+									{
+										if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), cHouse))
+											player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
+										else
+										{
+											player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
+											HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
+										}
+									}
+								}
                             }
                             
                         }
@@ -253,6 +295,7 @@ namespace HousingDistricts
         }
         public void OnChat(ServerChatEventArgs e)
         {
+			var Start = DateTime.Now;
             var msg = e.Buffer;
             var ply = e.Who;
             var text = e.Text;
@@ -265,9 +308,12 @@ namespace HousingDistricts
                         return;
 
                     var tsplr = TShock.Players[msg.whoAmI];
-                    foreach (House house in HousingDistricts.Houses)
-                    {
-                        if (house.WorldID == Main.worldID.ToString() && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
+					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					{
+						if (HousingDistricts.Houses.Count < 1) break;
+						if (Timeout(Start)) return;
+						var house = HousingDistricts.Houses[i];
+						if (!HouseTools.WorldMismatch(house) && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
                         {
                             HTools.BroadcastToHouse(house, text, tsplr.Name);
                             e.Handled = true;
@@ -283,10 +329,13 @@ namespace HousingDistricts
         }
         public void OnLeave(LeaveEventArgs args)
         {
+			var Start = DateTime.Now;
             lock (HPlayers)
             {
                 for (int i = 0; i < HPlayers.Count; i++)
                 {
+					if (Timeout(Start)) return;
+					if (HPlayers.Count < 1) break;
                     if (HPlayers[i].Index == args.Who)
                     {
                         HPlayers.RemoveAt(i);
@@ -324,5 +373,9 @@ namespace HousingDistricts
                 }
             }
         }
+		public static bool Timeout(DateTime Start, int ms = 1000)
+		{
+			return (Start - DateTime.Now).TotalMilliseconds > ms;
+		}
     }
 }

@@ -31,9 +31,9 @@ namespace HousingDistricts
         public int MinHouseHeight = 5;
         public string MinHouseHeight_description = "Minimum house height, for protection from griefer use of /house.";
         public int MaxHousesByUsername = 10;
-        public string MaxHousesByUsername_description = "Not yet implemented";
+        public string MaxHousesByUsername_description = "Maximum amount of houses a user can have (unless has persmission house.bypasscount).";
         public int MaxHousesByIP = 10;
-        public string MaxHousesByIP_description = "Not yet implemented";
+        public string MaxHousesByIP_description = "Not yet implemented. And probably won't be :P";
         public bool OverlapHouses = false;
         public string OverlapHouses_description = "Can players create houses that overlap another players' house?";
 

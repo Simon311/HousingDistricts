@@ -49,7 +49,7 @@ namespace HousingDistricts
             if (GetHouseByName(housename) != null) { return false; }
             try
             {
-                TShock.DB.Query("INSERT INTO HousingDistrict (" + String.Join(", ", cols) + ") VALUES (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9);", housename, tx, ty, width, height, "0", Main.worldID.ToString(), locked, chatenabled, "0");
+                TShock.DB.Query("INSERT INTO HousingDistrict (" + String.Join(", ", cols) + ") VALUES (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9);", housename, tx, ty, width, height, "", Main.worldID.ToString(), locked, chatenabled, "");
             }
             catch (Exception ex)
             {
@@ -67,8 +67,10 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Owners.Add(id);
-            foreach(string owner in house.Owners)
-            {
+			for (int i = 0; i <= house.Owners.Count - 1; i++)
+			{
+				if (house.Owners.Count < 1) break;
+				var owner = house.Owners[i];
                 count++;
                 sb.Append(owner);
                 if(count != house.Owners.Count)
@@ -96,12 +98,11 @@ namespace HousingDistricts
             if (house == null) { return false; }
             StringBuilder sb = new StringBuilder();
             int count = 0;
-            while (house.Owners.Contains(id))
-            {
-                house.Owners.Remove(id);
-            }
-            foreach (string owner in house.Owners)
-            {
+            house.Owners.Remove(id);
+			for (int i = 0; i <= house.Owners.Count - 1; i++)
+			{
+				if (house.Owners.Count < 1) break;
+				var owner = house.Owners[i];
                 count++;
                 sb.Append(owner);
                 if (count != house.Owners.Count)
@@ -133,8 +134,10 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Visitors.Add(id);
-            foreach (string visitor in house.Visitors)
-            {
+			for (int i = 0; i <= house.Visitors.Count - 1; i++)
+			{
+				if (house.Visitors.Count < 1) break;
+				var visitor = house.Visitors[i];
                 count++;
                 sb.Append(visitor);
                 if (count != house.Visitors.Count)
@@ -160,12 +163,11 @@ namespace HousingDistricts
         {
             StringBuilder sb = new StringBuilder();
             int count = 0;
-            while (house.Visitors.Contains(id))
-            {
-                house.Visitors.Remove(id);
-            }
-            foreach (string visitor in house.Visitors)
-            {
+            house.Visitors.Remove(id);
+			for (int i = 0; i <= house.Visitors.Count - 1; i++)
+			{
+				if (house.Visitors.Count < 1) break;
+				var visitor = house.Visitors[i];
                 count++;
                 sb.Append(visitor);
                 if (count != house.Visitors.Count)
@@ -266,8 +268,10 @@ namespace HousingDistricts
             {
                 return null;
             }
-            foreach (House house in HousingDistricts.Houses)
-            {
+			for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+			{
+				if (HousingDistricts.Houses.Count < 1) break;
+				var house = HousingDistricts.Houses[i];
                 if (house.Name == name)
                     return house;
             }

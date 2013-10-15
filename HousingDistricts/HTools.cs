@@ -33,9 +33,11 @@ namespace HousingDistricts
 
         public static void BroadcastToHouse(House house, string text, string playername)
         {
-            foreach (HPlayer player in HousingDistricts.HPlayers)
-            {
-                if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
+			for (int i = 0; i <= HousingDistricts.HPlayers.Count - 1; i++)
+			{
+				if (HousingDistricts.HPlayers.Count < 1) break;
+				var player = HousingDistricts.HPlayers[i];
+				if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && !HouseTools.WorldMismatch(house))
                 {
                     player.TSPlayer.SendMessage("<House> <" + playername + ">: " + text, Color.LightSkyBlue);
                 }
@@ -44,9 +46,11 @@ namespace HousingDistricts
 
         public static string InAreaHouseName(int x, int y)
         {
-            foreach (House house in HousingDistricts.Houses)
-            {
-                if (house.WorldID == Main.worldID.ToString() &&
+			for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+			{
+				if (HousingDistricts.Houses.Count < 1) break;
+				var house = HousingDistricts.Houses[i];
+				if (!HouseTools.WorldMismatch(house) &&
                     x >= house.HouseArea.Left && x < house.HouseArea.Right &&
                     y >= house.HouseArea.Top && y < house.HouseArea.Bottom)
                 {
@@ -63,16 +67,15 @@ namespace HousingDistricts
 
         public static void BroadcastToHouseOwners(House house, string text)
         {
-            foreach (string ID in house.Owners)
+            for (int i = 0; i <= house.Owners.Count-1; i++)
             {
+				if (house.Owners.Count < 1) break;
+				var ID = house.Owners[i];
                 foreach (TSPlayer player in TShock.Players)
                 {
                     if (player != null)
                     {
-                        if (player.UserID.ToString() == ID)
-                        {
-                            player.SendMessage(text, Color.LightSeaGreen);
-                        }
+                        if (player.UserID.ToString() == ID) player.SendMessage(text, Color.LightSeaGreen);
                     }
                 }
             }
@@ -119,20 +122,19 @@ namespace HousingDistricts
 
         public static bool CanVisitHouse(string UserID, House house)
         {
-            return house.Visitors.Contains(UserID) || house.Owners.Contains(UserID); 
+            return (house.Visitors.Contains(UserID) && !String.IsNullOrEmpty(UserID) && UserID != "0")  || house.Owners.Contains(UserID); 
         }
 
         public static HPlayer GetPlayerByID(int id)
         {
-            var retplayer = new HPlayer();
+			for (int i = 0; i <= HousingDistricts.HPlayers.Count-1; i++)
+			{
+				if (HousingDistricts.HPlayers.Count < 1) break;
+				var player = HousingDistricts.HPlayers[i];
+				if (player.Index == id) return player;
+			}
 
-            foreach (HPlayer player in HousingDistricts.HPlayers)
-            {
-                if (player.Index == id)
-                    return player;
-            }
-
-            return retplayer;
+			return new HPlayer();
         }
     }
 }

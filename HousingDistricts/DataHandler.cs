@@ -61,6 +61,7 @@ namespace HousingDistricts
 
         private static bool HandleSendTileSquare(GetDataHandlerArgs args)
         {
+			var Start = DateTime.Now;
             short size = args.Data.ReadInt16();
             int tilex = args.Data.ReadInt32();
             int tiley = args.Data.ReadInt32();
@@ -69,17 +70,20 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-                    foreach (House house in HousingDistricts.Houses)
-                    {
-                        if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
-                        {
-                            if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
-                            {
-                                args.Player.SendTileSquare(tilex, tiley);
-                                return true;
-                            }
-                        }
-                    }
+					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					{
+						if (HousingDistricts.Timeout(Start)) return false;
+						if (HousingDistricts.Houses.Count < 1) break;
+						var house = HousingDistricts.Houses[i];
+						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
+						{
+							if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
+							{
+								args.Player.SendTileSquare(tilex, tiley);
+								return true;
+							}
+						}
+					}
                 }
             }
             return false;
@@ -87,6 +91,7 @@ namespace HousingDistricts
 
         private static bool HandleTile(GetDataHandlerArgs args)
         {
+			var Start = DateTime.Now;
             byte type = args.Data.ReadInt8();
             int x = args.Data.ReadInt32();
             int y = args.Data.ReadInt32();
@@ -133,9 +138,12 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-                    foreach (House house in HousingDistricts.Houses)
-                    {
-                        if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
+					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					{
+						if (HousingDistricts.Timeout(Start)) return false;
+						if (HousingDistricts.Houses.Count < 1) break;
+						var house = HousingDistricts.Houses[i];
+						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
                             {
@@ -151,6 +159,7 @@ namespace HousingDistricts
 
         private static bool HandleLiquidSet(GetDataHandlerArgs args)
         {
+			var Start = DateTime.Now;
             int x = args.Data.ReadInt32();
             int y = args.Data.ReadInt32();
             int plyX = Math.Abs(args.Player.TileX);
@@ -162,9 +171,12 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-                    foreach (House house in HousingDistricts.Houses)
-                    {
-                        if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
+					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					{
+						if (HousingDistricts.Timeout(Start)) return false;
+						if (HousingDistricts.Houses.Count < 1) break;
+						var house = HousingDistricts.Houses[i];
+						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
                             {
@@ -180,6 +192,7 @@ namespace HousingDistricts
 
         private static bool HandleTileKill(GetDataHandlerArgs args)
         {
+			var Start = DateTime.Now;
             int x = args.Data.ReadInt32();
             int y = args.Data.ReadInt32();
             int tilex = Math.Abs(x);
@@ -223,9 +236,12 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-                    foreach (House house in HousingDistricts.Houses)
-                    {
-                        if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && house.WorldID == Main.worldID.ToString())
+					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					{
+						if (HousingDistricts.Timeout(Start)) return false;
+						if (HousingDistricts.Houses.Count < 1) break;
+						var house = HousingDistricts.Houses[i];
+						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
                             {

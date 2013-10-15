@@ -12,7 +12,9 @@ namespace HousingDistricts
     {
         public static void House(CommandArgs args)
         {
-            string AdminHouse = "house.admin"; // Seems right to keep the actual permision name in one place, for easy editing
+            string AdminHouse = "house.admin"; // Seems right to keep the actual permision names in one place, for easy editing
+			string UseHouse = "house.use";
+			string LockHouse = "house.lock";
             string cmd = "help";
             var ply = args.Player; // Makes the code shorter
             if (args.Parameters.Count > 0)
@@ -32,6 +34,11 @@ namespace HousingDistricts
                     }
                 case "set":
                     {
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
                         if (!ply.IsLoggedIn || ply.UserID == 0)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
@@ -56,6 +63,11 @@ namespace HousingDistricts
                     }
                 case "add":
                     {
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
                         if (!ply.IsLoggedIn || ply.UserID == 0)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
@@ -64,17 +76,15 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 1)
                         {
                             List<int> userOwnedHouses = new List<int>();
-                            foreach (House house in HousingDistricts.Houses)
-                            {
-                                foreach (string owner in house.Owners)
-                                {
-                                    if (ply.UserID.ToString() == owner)
-                                    {
-                                        userOwnedHouses.Add(house.ID);
-                                        break;
-                                    }
-
-                                }
+							for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+							{
+								if (HousingDistricts.Houses.Count < 1) break;
+								var house = HousingDistricts.Houses[i];
+								if (HTools.OwnsHouse(ply.UserID.ToString(), house))
+								{
+									userOwnedHouses.Add(house.ID);
+									break;
+								}
                             }
                             if (userOwnedHouses.Count < HousingDistricts.HConfig.MaxHousesByUsername || ply.Group.HasPermission("house.bypasscount"))
                             {
@@ -95,9 +105,11 @@ namespace HousingDistricts
                                     if (((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight) || ply.Group.HasPermission("house.bypasssize"))
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
-                                        foreach (House house in HousingDistricts.Houses)
-                                        {
-                                            if (house.WorldID == Main.worldID.ToString() && (newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
+										for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+										{
+											if (HousingDistricts.Houses.Count < 1) break;
+											var house = HousingDistricts.Houses[i];
+											if (!HouseTools.WorldMismatch(house) && (newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
                                             { // user is allowed to intersect their own house
                                                 ply.SendErrorMessage("Your selected area overlaps another players' house, which is not allowed.");
                                                 return;
@@ -162,7 +174,12 @@ namespace HousingDistricts
                     }
                 case "allow":
                     {
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
                             return;
@@ -208,7 +225,12 @@ namespace HousingDistricts
                     }
                 case "disallow":
                     {
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
                             return;
@@ -247,7 +269,12 @@ namespace HousingDistricts
                     }
                 case "delete":
                     {
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
                             return;
@@ -283,6 +310,11 @@ namespace HousingDistricts
                     }
                 case "clear":
                     {
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
                         ply.TempPoints[0] = Point.Zero;
                         ply.TempPoints[1] = Point.Zero;
                         ply.AwaitingTempPoint = 0;
@@ -311,9 +343,11 @@ namespace HousingDistricts
 
                         List<House> houses = new List<House>();
 
-                        foreach (House house in HousingDistricts.Houses)
-                        {
-                            if (house.WorldID == Main.worldID.ToString())
+						for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+						{
+							if (HousingDistricts.Houses.Count < 1) break;
+							var house = HousingDistricts.Houses[i];
+							if (!HouseTools.WorldMismatch(house))
                             {
                                 houses.Add(house);
                             }
@@ -359,6 +393,11 @@ namespace HousingDistricts
                     }
                 case "redefine":
                     {
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
                         if (!ply.IsLoggedIn || ply.UserID == 0)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
@@ -379,9 +418,11 @@ namespace HousingDistricts
                                     if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
-                                        foreach (House house in HousingDistricts.Houses)
-                                        {
-                                            if (house.WorldID == Main.worldID.ToString() && (newHouseR.Intersects(house.HouseArea) && !house.Owners.Contains(ply.UserID.ToString())) && !HousingDistricts.HConfig.OverlapHouses)
+										for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+										{
+											if (HousingDistricts.Houses.Count < 1) break;
+											var house = HousingDistricts.Houses[i];
+											if (!HouseTools.WorldMismatch(house) && (newHouseR.Intersects(house.HouseArea) && !house.Owners.Contains(ply.UserID.ToString())) && !HousingDistricts.HConfig.OverlapHouses)
                                             { // user is allowed to intersect their own house
                                                 ply.SendErrorMessage("Your selected area overlaps another players' house, which is not allowed.");
                                                 return;
@@ -442,26 +483,51 @@ namespace HousingDistricts
                             ply.SendErrorMessage("Invalid syntax! Proper syntax: /house redefine [name]");
                         break;
                     }
-                case "debug":
-                    { // This is here for World Mismatch :D
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
-                        {
-                            return;
-                        }
+                case "info":
+                    {
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer || !ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
                             if (house == null) { ply.SendErrorMessage("No such house!"); return; }
+							string OwnerNames = "";
+							string VisitorNames = "";
+							for (int i = 0; i <= house.Owners.Count-1; i++)
+							{
+								if (house.Owners.Count < 1) break;
+								var ID = house.Owners[i];
+								try { OwnerNames += (String.IsNullOrEmpty(OwnerNames) ? "" : ", ") + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name;}
+								catch { }
+							}
+							for (int i = 0; i <= house.Visitors.Count-1; i++)
+							{
+								if (house.Visitors.Count < 1) break;
+								var ID = house.Visitors[i];
+								try { VisitorNames += (String.IsNullOrEmpty(VisitorNames) ? "" : ", ") + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+								catch { }
+							}
                             ply.SendMessage("House '" + house.Name + "':", Color.LawnGreen);
-                            ply.SendMessage("Chat enabled: " + house.ChatEnabled.ToString(), Color.LawnGreen);
-                            ply.SendMessage("Owner IDs: " + String.Join(", ",house.Owners.ToArray()), Color.LawnGreen);
+                            ply.SendMessage("Chat enabled: " + (house.ChatEnabled == 1 ? "yes" : "no"), Color.LawnGreen);
+							ply.SendMessage("Locked: " + (house.Locked == 1 ? "yes" : "no"), Color.LawnGreen);
+                            ply.SendMessage("Owners: " + OwnerNames, Color.LawnGreen);
+							ply.SendMessage("Visitors: " + VisitorNames, Color.LawnGreen);
                             ply.SendMessage("World Mismatch: " + HouseTools.WorldMismatch(house).ToString(), Color.LawnGreen);
                         }
+						else ply.SendErrorMessage("Invalid syntax! Proper syntax: /house info [house]");
                         break;
                     }
                 case "lock":
                     {
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
+						if (!ply.Group.HasPermission(LockHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
                             return;
@@ -493,56 +559,6 @@ namespace HousingDistricts
                         }
                         break;
                     }
-                case "owners":
-                    {
-                        if (args.Parameters.Count > 1)
-                        {
-                            var house = HouseTools.GetHouseByName(args.Parameters[1]);
-                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
-                            string OwnerNames = "";
-                            foreach (string ID in house.Owners)
-                            {
-                                try
-                                {
-                                    if (OwnerNames == "") { OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
-                                    else { OwnerNames = OwnerNames + ", " + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
-                                }
-                                catch
-                                { }
-                            }
-                            ply.SendMessage(String.Format("House '{0}' owners: {1}", house.Name, OwnerNames), Color.Lime);
-                        }
-                        else
-                        {
-                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house owner [house-name]");
-                        }
-                        break;
-                    }
-                case "visitors":
-                    {
-                        if (args.Parameters.Count > 1)
-                        {
-                            var house = HouseTools.GetHouseByName(args.Parameters[1]);
-                            if (house == null) { ply.SendErrorMessage("No such house!"); return; }
-                            string OwnerNames = "";
-                            foreach (string ID in house.Visitors)
-                            {
-                                try
-                                {
-                                    if (OwnerNames == "") { OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
-                                    else { OwnerNames = OwnerNames + ", " + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
-                                }
-                                catch
-                                { }
-                            }
-                            ply.SendMessage(String.Format("House '{0}' visitors: {1}", house.Name, OwnerNames), Color.Lime);
-                        }
-                        else
-                        {
-                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house visitors [house-name]");
-                        }
-                        break;
-                    }
                 case "reload":
                     {
                         if (ply.Group.HasPermission("house.root")) { HouseReload(args); }
@@ -550,7 +566,12 @@ namespace HousingDistricts
                     }
                 case "chat":
                     {
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
                             return;
@@ -597,7 +618,12 @@ namespace HousingDistricts
                     }
                 case "addvisitor":
                     {
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
                             return;
@@ -642,8 +668,13 @@ namespace HousingDistricts
                         break;
                     }
                 case "delvisitor":
-                    {
-                        if (!ply.IsLoggedIn || ply.UserID == 0)
+					{
+						if (!ply.Group.HasPermission(UseHouse))
+						{
+							ply.SendErrorMessage("You do not have permission to use this command!");
+							return;
+						}
+						if ((!ply.IsLoggedIn || ply.UserID == 0) && ply.RealPlayer)
                         {
                             ply.SendErrorMessage("You must log-in to use House Protection.");
                             return;
@@ -686,8 +717,8 @@ namespace HousingDistricts
                         ply.SendMessage("/house set 1", Color.Lime);
                         ply.SendMessage("/house set 2", Color.Lime);
                         ply.SendMessage("/house add HouseName", Color.Lime);
-                        ply.SendMessage("Other /house commands: list, allow, disallow, name, delete, clear, owners,", Color.Lime);
-                        ply.SendMessage("                           visitors, addvisitor, delvisitor, lock, reload, debug", Color.Lime);
+                        ply.SendMessage("Other /house commands: list, allow, disallow, name, delete, clear, info,", Color.Lime);
+                        ply.SendMessage("                           addvisitor, delvisitor, lock, reload", Color.Lime);
                         break;
                     }
             }
@@ -739,6 +770,7 @@ namespace HousingDistricts
                 int chatenabled;
                 if (reader.Get<int>("ChatEnabled") == 1) { chatenabled = 1; }
                 else { chatenabled = 0; }
+				list = reader.Get<string>("Visitors").Split(',');
                 List<string> visitors = new List<string>();
                 foreach (string i in list)
                     visitors.Add(i);
