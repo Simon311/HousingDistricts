@@ -67,9 +67,9 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Owners.Add(id);
-			for (int i = 0; i <= house.Owners.Count - 1; i++)
+			var I = house.Owners.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (house.Owners.Count < 1) break;
 				var owner = house.Owners[i];
                 count++;
                 sb.Append(owner);
@@ -99,9 +99,9 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Owners.Remove(id);
-			for (int i = 0; i <= house.Owners.Count - 1; i++)
+			var I = house.Owners.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (house.Owners.Count < 1) break;
 				var owner = house.Owners[i];
                 count++;
                 sb.Append(owner);
@@ -134,9 +134,9 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Visitors.Add(id);
-			for (int i = 0; i <= house.Visitors.Count - 1; i++)
+			var I = house.Owners.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (house.Visitors.Count < 1) break;
 				var visitor = house.Visitors[i];
                 count++;
                 sb.Append(visitor);
@@ -164,9 +164,9 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Visitors.Remove(id);
-			for (int i = 0; i <= house.Visitors.Count - 1; i++)
+			var I = house.Owners.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (house.Visitors.Count < 1) break;
 				var visitor = house.Visitors[i];
                 count++;
                 sb.Append(visitor);
@@ -268,9 +268,9 @@ namespace HousingDistricts
             {
                 return null;
             }
-			for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+			var I = HousingDistricts.Houses.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (HousingDistricts.Houses.Count < 1) break;
 				var house = HousingDistricts.Houses[i];
                 if (house.Name == name)
                     return house;

@@ -12,7 +12,7 @@ namespace HousingDistricts
     {
         public static void House(CommandArgs args)
         {
-            string AdminHouse = "house.admin"; // Seems right to keep the actual permision names in one place, for easy editing
+            string AdminHouse = "house.admin"; // Seems right to keep the actual permission names in one place, for easy editing
 			string UseHouse = "house.use";
 			string LockHouse = "house.lock";
             string cmd = "help";
@@ -76,17 +76,16 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 1)
                         {
                             List<int> userOwnedHouses = new List<int>();
-							for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+							var maxHouses = HTools.MaxCount(ply);
+							for (int i = 0; i < HousingDistricts.Houses.Count; i++)
 							{
-								if (HousingDistricts.Houses.Count < 1) break;
 								var house = HousingDistricts.Houses[i];
 								if (HTools.OwnsHouse(ply.UserID.ToString(), house))
 								{
 									userOwnedHouses.Add(house.ID);
-									break;
 								}
                             }
-                            if (userOwnedHouses.Count < HousingDistricts.HConfig.MaxHousesByUsername || ply.Group.HasPermission("house.bypasscount"))
+                            if (userOwnedHouses.Count < maxHouses || ply.Group.HasPermission("house.bypasscount"))
                             {
                                 if (!ply.TempPoints.Any(p => p == Point.Zero))
                                 {
@@ -102,24 +101,33 @@ namespace HousingDistricts
                                     var y = Math.Min(ply.TempPoints[0].Y, ply.TempPoints[1].Y);
                                     var width = Math.Abs(ply.TempPoints[0].X - ply.TempPoints[1].X) + 1;
                                     var height = Math.Abs(ply.TempPoints[0].Y - ply.TempPoints[1].Y) + 1;
-                                    if (((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight) || ply.Group.HasPermission("house.bypasssize"))
+									var maxSize = HTools.MaxSize(ply);
+									if (((width * height) <= maxSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight) || ply.Group.HasPermission("house.bypasssize"))
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
-										for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+										for (int i = 0; i < HousingDistricts.Houses.Count; i++)
 										{
-											if (HousingDistricts.Houses.Count < 1) break;
 											var house = HousingDistricts.Houses[i];
 											if (!HouseTools.WorldMismatch(house) && (newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
-                                            { // user is allowed to intersect their own house
+                                            {
                                                 ply.SendErrorMessage("Your selected area overlaps another players' house, which is not allowed.");
                                                 return;
                                             }
                                         }
                                         if (newHouseR.Intersects(new Rectangle(Main.spawnTileX, Main.spawnTileY, 1, 1)))
                                         {
-                                                ply.SendErrorMessage("Your selected area overlaps spawnpoint, which is not allowed."); // Will make it check if it Intersects regions later
+                                                ply.SendErrorMessage("Your selected area overlaps spawnpoint, which is not allowed.");
                                                 return;
                                         }
+										for (int i = 0; i < TShock.Regions.Regions.Count; i++)
+										{
+											var Region = TShock.Regions.Regions[i];
+											if (newHouseR.Intersects(Region.Area) && !Region.HasPermissionToBuildInRegion(ply))
+											{
+												ply.SendErrorMessage(string.Format("Your selected area overlaps region '{0}', which is not allowed.", Region.Name));
+												return;
+											}
+										}
                                         if (HouseTools.AddHouse(x, y, width, height, houseName, ply.UserID.ToString(), 0, 0))
                                         {
                                             ply.TempPoints[0] = Point.Zero;
@@ -135,23 +143,23 @@ namespace HousingDistricts
                                     }
                                     else
                                     {
-                                        if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
+										if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
                                         {
-                                            ply.SendErrorMessage("Your house exceeds the maximum size of " + HousingDistricts.HConfig.MaxHouseSize.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Your house exceeds the maximum size of " + maxSize.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
                                             ply.TempPoints[0] = Point.Zero;
                                             ply.TempPoints[1] = Point.Zero;
                                         }
                                         else if (width < HousingDistricts.HConfig.MinHouseWidth)
                                         {
-                                            ply.SendErrorMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
                                             ply.TempPoints[0] = Point.Zero;
                                             ply.TempPoints[1] = Point.Zero;
                                         }
                                         else
                                         {
-                                            ply.SendErrorMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
                                             ply.TempPoints[0] = Point.Zero;
                                             ply.TempPoints[1] = Point.Zero;
@@ -343,9 +351,8 @@ namespace HousingDistricts
 
                         List<House> houses = new List<House>();
 
-						for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+						for (int i = 0; i < HousingDistricts.Houses.Count; i++)
 						{
-							if (HousingDistricts.Houses.Count < 1) break;
 							var house = HousingDistricts.Houses[i];
 							if (!HouseTools.WorldMismatch(house))
                             {
@@ -414,13 +421,13 @@ namespace HousingDistricts
                                     var y = Math.Min(ply.TempPoints[0].Y, ply.TempPoints[1].Y);
                                     var width = Math.Abs(ply.TempPoints[0].X - ply.TempPoints[1].X) + 1;
                                     var height = Math.Abs(ply.TempPoints[0].Y - ply.TempPoints[1].Y) + 1;
+									var maxSize = HTools.MaxSize(ply);
 
-                                    if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
+									if ((width * height) <= maxSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
-										for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+										for (int i = 0; i < HousingDistricts.Houses.Count; i++)
 										{
-											if (HousingDistricts.Houses.Count < 1) break;
 											var house = HousingDistricts.Houses[i];
 											if (!HouseTools.WorldMismatch(house) && (newHouseR.Intersects(house.HouseArea) && !house.Owners.Contains(ply.UserID.ToString())) && !HousingDistricts.HConfig.OverlapHouses)
                                             { // user is allowed to intersect their own house
@@ -433,6 +440,15 @@ namespace HousingDistricts
                                             ply.SendErrorMessage("Your selected area overlaps spawnpoint, which is not allowed.");
                                             return;
                                         }
+										for (int i = 0; i < TShock.Regions.Regions.Count; i++)
+										{
+											var Region = TShock.Regions.Regions[i];
+											if (newHouseR.Intersects(Region.Area) && !Region.HasPermissionToBuildInRegion(ply))
+											{
+												ply.SendErrorMessage(string.Format("Your selected area overlaps region '{0}', which is not allowed.", Region.Name));
+												return;
+											}
+										}
                                         if (HouseTools.RedefineHouse(x, y, width, height, houseName))
                                         {
                                             ply.TempPoints[0] = Point.Zero;
@@ -448,21 +464,21 @@ namespace HousingDistricts
                                     {
                                         if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
                                         {
-                                            ply.SendErrorMessage("Your house exceeds the maximum size of " + HousingDistricts.HConfig.MaxHouseSize.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Your house exceeds the maximum size of " + maxSize.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
                                             ply.TempPoints[0] = Point.Zero;
                                             ply.TempPoints[1] = Point.Zero;
                                         }
                                         else if (width < HousingDistricts.HConfig.MinHouseWidth)
                                         {
-                                            ply.SendErrorMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
                                             ply.TempPoints[0] = Point.Zero;
                                             ply.TempPoints[1] = Point.Zero;
                                         }
                                         else
                                         {
-                                            ply.SendErrorMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
                                             ply.TempPoints[0] = Point.Zero;
                                             ply.TempPoints[1] = Point.Zero;
@@ -496,16 +512,14 @@ namespace HousingDistricts
                             if (house == null) { ply.SendErrorMessage("No such house!"); return; }
 							string OwnerNames = "";
 							string VisitorNames = "";
-							for (int i = 0; i <= house.Owners.Count-1; i++)
+							for (int i = 0; i < house.Owners.Count; i++)
 							{
-								if (house.Owners.Count < 1) break;
 								var ID = house.Owners[i];
 								try { OwnerNames += (String.IsNullOrEmpty(OwnerNames) ? "" : ", ") + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name;}
 								catch { }
 							}
-							for (int i = 0; i <= house.Visitors.Count-1; i++)
+							for (int i = 0; i < house.Visitors.Count; i++)
 							{
-								if (house.Visitors.Count < 1) break;
 								var ID = house.Visitors[i];
 								try { VisitorNames += (String.IsNullOrEmpty(VisitorNames) ? "" : ", ") + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
 								catch { }

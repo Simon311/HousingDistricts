@@ -7,7 +7,13 @@ namespace HousingDistricts
     public class HConfigFile
     {
         public bool NotifyOnEntry = true;
-        public string NotifyOnEntry_description = "Global setting: Notifies the owner of the house and the user who entered the house when the user enters.";
+        public string NotifyOnEntry_description = "Global setting: Enables entry notifications (see below).";
+		public bool NotifyOwner = true;
+		public string NotifyOwner_description = "Global setting: Notifies the owner of the house when a user enters/leaves.";
+		public bool NotifyVisitor = true;
+		public string NotifyVisitor_description = "Global setting: Notifies a user about entering/leaving a house.";
+		public bool NotifySelf = true;
+		public string NotifySelf_description = "Global setting: Notifies a user about entering/leaving his/her own house.";
         public string NotifyOnEntryString = "You have entered the house: '$HOUSE_NAME'";
         public string NotifyOnEntryString_description = "The string presented to players when they enter another player's house.";
         public string NotifyOnOwnHouseEntryString = "Entered your house: '$HOUSE_NAME'";
@@ -15,7 +21,7 @@ namespace HousingDistricts
         public string NotifyOnOtherEntryString = "$PLAYER_NAME Entered your house: '$HOUSE_NAME'";
         public string NotifyOnOtherEntryString_description = "The string presented to players when someone else enters their house.";
         public bool NotifyOnExit = true;
-        public string NotifyOnExit_description = "Global setting: Notifies the owner of the house and the user who exited the house when the user exits.";
+        public string NotifyOnExit_description = "Global setting: Enables exit notifications.";
         public string NotifyOnExitString = "You have left the house: '$HOUSE_NAME'";
         public string NotifyOnExitString_description = "The string presented to players when they leave another player's house.";
         public string NotifyOnOwnHouseExitString = "Left your house: '$HOUSE_NAME'";
@@ -32,8 +38,6 @@ namespace HousingDistricts
         public string MinHouseHeight_description = "Minimum house height, for protection from griefer use of /house.";
         public int MaxHousesByUsername = 10;
         public string MaxHousesByUsername_description = "Maximum amount of houses a user can have (unless has persmission house.bypasscount).";
-        public int MaxHousesByIP = 10;
-        public string MaxHousesByIP_description = "Not yet implemented. And probably won't be :P";
         public bool OverlapHouses = false;
         public string OverlapHouses_description = "Can players create houses that overlap another players' house?";
 

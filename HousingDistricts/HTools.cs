@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using TShockAPI;
 using Terraria;
 
@@ -17,7 +18,7 @@ namespace HousingDistricts
                 if (File.Exists(HConfigPath))
                 {
                     HousingDistricts.HConfig = HConfigFile.Read(HConfigPath);
-                    // Add all the missing config properties in the json file
+                    /* Add all the missing config properties in the json file */
                 }
                 HousingDistricts.HConfig.Write(HConfigPath);
             }
@@ -33,9 +34,9 @@ namespace HousingDistricts
 
         public static void BroadcastToHouse(House house, string text, string playername)
         {
-			for (int i = 0; i <= HousingDistricts.HPlayers.Count - 1; i++)
+			var I = HousingDistricts.HPlayers.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (HousingDistricts.HPlayers.Count < 1) break;
 				var player = HousingDistricts.HPlayers[i];
 				if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && !HouseTools.WorldMismatch(house))
                 {
@@ -46,9 +47,9 @@ namespace HousingDistricts
 
         public static string InAreaHouseName(int x, int y)
         {
-			for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+			var I = HousingDistricts.Houses.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (HousingDistricts.Houses.Count < 1) break;
 				var house = HousingDistricts.Houses[i];
 				if (!HouseTools.WorldMismatch(house) &&
                     x >= house.HouseArea.Left && x < house.HouseArea.Right &&
@@ -67,9 +68,9 @@ namespace HousingDistricts
 
         public static void BroadcastToHouseOwners(House house, string text)
         {
-            for (int i = 0; i <= house.Owners.Count-1; i++)
+			var I = house.Owners.Count;
+            for (int i = 0; i < I; i++)
             {
-				if (house.Owners.Count < 1) break;
 				var ID = house.Owners[i];
                 foreach (TSPlayer player in TShock.Players)
                 {
@@ -122,19 +123,50 @@ namespace HousingDistricts
 
         public static bool CanVisitHouse(string UserID, House house)
         {
-            return (house.Visitors.Contains(UserID) && !String.IsNullOrEmpty(UserID) && UserID != "0")  || house.Owners.Contains(UserID); 
+            return (!String.IsNullOrEmpty(UserID) && UserID != "0") && (house.Visitors.Contains(UserID) || house.Owners.Contains(UserID)); 
         }
 
         public static HPlayer GetPlayerByID(int id)
         {
-			for (int i = 0; i <= HousingDistricts.HPlayers.Count-1; i++)
+			var I = HousingDistricts.HPlayers.Count;
+			for (int i = 0; i < I; i++)
 			{
-				if (HousingDistricts.HPlayers.Count < 1) break;
 				var player = HousingDistricts.HPlayers[i];
 				if (player.Index == id) return player;
 			}
 
 			return new HPlayer();
         }
+
+		public static int MaxSize(TSPlayer ply)
+		{
+			var I = ply.Group.permissions.Count;
+			for (int i = 0; i < I; i++)
+			{
+				var perm = ply.Group.permissions[i];
+				Match Match = Regex.Match(perm, "house\\.size\\.(\\d+)");
+				if (Match.Success && Match.Value == perm)
+				{
+					Console.WriteLine(Convert.ToInt32(Match.Groups[1].Value));
+					return Convert.ToInt32(Match.Groups[1].Value);
+				}
+			}
+			return HousingDistricts.HConfig.MaxHouseSize;
+		}
+
+		public static int MaxCount(TSPlayer ply)
+		{
+			var I = ply.Group.permissions.Count;
+			for (int i = 0; i < I; i++)
+			{
+				var perm = ply.Group.permissions[i];
+				Match Match = Regex.Match(perm, "house\\.count\\.(\\d+)");
+				if (Match.Success && Match.Value == perm)
+				{
+					return Convert.ToInt32(Match.Groups[1].Value);
+				}
+			}
+			return HousingDistricts.HConfig.MaxHousesByUsername;
+		}
     }
 }

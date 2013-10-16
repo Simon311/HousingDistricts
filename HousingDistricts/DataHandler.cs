@@ -70,10 +70,10 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					var I = HousingDistricts.Houses.Count;
+					for (int i = 0; i < I; i++)
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						if (HousingDistricts.Houses.Count < 1) break;
 						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
 						{
@@ -138,10 +138,10 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					var I = HousingDistricts.Houses.Count;
+					for (int i = 0; i < I; i++)
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						if (HousingDistricts.Houses.Count < 1) break;
 						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
                         {
@@ -171,10 +171,10 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					var I = HousingDistricts.Houses.Count;
+					for (int i = 0; i < I; i++)
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						if (HousingDistricts.Houses.Count < 1) break;
 						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
                         {
@@ -236,10 +236,10 @@ namespace HousingDistricts
             {
                 lock (HousingDistricts.HPlayers)
                 {
-					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					var I = HousingDistricts.Houses.Count;
+					for (int i = 0; i < I; i++)
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						if (HousingDistricts.Houses.Count < 1) break;
 						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
                         {

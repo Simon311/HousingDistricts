@@ -7,6 +7,7 @@ using MySql.Data.MySqlClient;
 using TShockAPI;
 using TShockAPI.DB;
 using System.IO;
+using System.Reflection;
 
 namespace HousingDistricts
 {
@@ -23,27 +24,29 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "By Twitchy, Dingo, radishes, CoderCow and B4"; }
+            get { return "Twitchy, Dingo, radishes, CoderCow and B4"; }
         }
         public override string Description
         {
-            get { return "Housing Districts 2.0"; }
+			get { return "Housing Districts v." + Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
         }
         public override Version Version
         {
-            get { return new Version(2, 0, 1, 5); }
+			get { return Assembly.GetExecutingAssembly().GetName().Version; }
         }
 
 		// Done: Update Timer
 		// Done: Manage permissions inside /house
-		// Done: Use for on Houses List instead of foreach
+		// Done: Use for on Lists instead of foreach
 		// Note: Do NOT replace for, its faster for Lists than Foreach. Yes, there are studies proving that. No, there is no difference for arrays.
 
-		// TODO: Add UUID support
-		// TODO: Add owners+builders instead of just owners
-		// TODO: House count limit specific to groups.
-		// TODO: Make separate NotifyOnEntry/Exit for Players/Owners.
-		// TODO: Check if a house Intersects any admin stuff like regions or warps.
+		// Done: Added house.count.[int], house.size.[int] #tested
+		// Done: Added NotifyOwner, NotifyUser, NotifySelf #tested
+		// Done: Check if a house Intersects any regions. #tested
+
+
+		// TODO: Add UUID support --Not sure when will implement this
+		// TODO: Add owners+builders instead of just owners --Same for this
 		// TODO: Add Caching User Info?
 
 
@@ -190,19 +193,19 @@ namespace HousingDistricts
 			if (Main.rand == null) Main.rand = new Random();
                 lock (HPlayers)
                 {
-					for (int i = 0; i <= HousingDistricts.HPlayers.Count - 1; i++)
+					var I = HousingDistricts.HPlayers.Count;
+					for (int i = 0; i < I; i++)
 					{
 						if (Timeout(Start, 2000)) return;
-						if (HPlayers.Count < 1) break;
 						var player = HousingDistricts.HPlayers[i];
                         List<string> NewCurHouses = new List<string>(player.CurHouses);
                         int HousesNotIn = 0;
                         try
                         {
-							for (int j = 0; j <= HousingDistricts.Houses.Count - 1; j++)
+							var J = HousingDistricts.Houses.Count;
+							for (int j = 0; j < J; j++)
 							{
 								if (Timeout(Start, 2000)) return;
-								if (HousingDistricts.Houses.Count < 1) break;
 								var house = HousingDistricts.Houses[j];
                                 try
                                 {
@@ -221,28 +224,50 @@ namespace HousingDistricts
 													{
 														NewCurHouses.Add(house.Name);
 														if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
-															player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
+														{
+															if (HConfig.NotifySelf)
+															{
+																player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
+															}
+														}
 														else
 														{
-															player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
-															HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
+															if (HConfig.NotifyVisitor)
+															{
+																player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
+															}
+															if (HConfig.NotifyOwner)
+															{
+																HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
+															}
 														}
 													}
 												}
                                             }
                                             else
                                             {
-                                                if (!player.CurHouses.Contains(house.Name) && HConfig.NotifyOnEntry)
-                                                {
-                                                    NewCurHouses.Add(house.Name);
-                                                    if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
-                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
-                                                    else
-                                                    {
-                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
-                                                        HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
-                                                    }
-                                                }
+												if (!player.CurHouses.Contains(house.Name) && HConfig.NotifyOnEntry)
+												{
+													NewCurHouses.Add(house.Name);
+													if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
+													{
+														if(HConfig.NotifySelf)
+														{
+														player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
+														}
+													}
+													else
+													{
+														if (HConfig.NotifyVisitor)
+														{
+															player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
+														}
+														if (HConfig.NotifyOwner)
+														{
+															HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
+														}
+													}
+												}
                                             }
                                         }
                                         else
@@ -268,18 +293,29 @@ namespace HousingDistricts
                         if (HConfig.NotifyOnExit)
                         {
                             {
-								for (int k = 0; k <= player.CurHouses.Count - 1; k++)
+								var K = player.CurHouses.Count;
+								for (int k = 0; k < K; k++)
 								{
-									if (player.CurHouses.Count < 1) break;
 									var cHouse = player.CurHouses[k];
 									if (!NewCurHouses.Contains(cHouse))
 									{
 										if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), cHouse))
-											player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
+										{
+											if (HConfig.NotifySelf)
+											{
+												player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
+											}
+										}
 										else
 										{
-											player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
-											HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
+											if (HConfig.NotifyVisitor)
+											{
+												player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
+											}
+											if (HConfig.NotifyOwner)
+											{
+												HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
+											}
 										}
 									}
 								}
@@ -308,9 +344,9 @@ namespace HousingDistricts
                         return;
 
                     var tsplr = TShock.Players[msg.whoAmI];
-					for (int i = 0; i <= HousingDistricts.Houses.Count - 1; i++)
+					var I = HousingDistricts.Houses.Count;
+					for (int i = 0; i < I; i++)
 					{
-						if (HousingDistricts.Houses.Count < 1) break;
 						if (Timeout(Start)) return;
 						var house = HousingDistricts.Houses[i];
 						if (!HouseTools.WorldMismatch(house) && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
@@ -332,10 +368,10 @@ namespace HousingDistricts
 			var Start = DateTime.Now;
             lock (HPlayers)
             {
-                for (int i = 0; i < HPlayers.Count; i++)
+				var I = HPlayers.Count;
+                for (int i = 0; i < I; i++)
                 {
 					if (Timeout(Start)) return;
-					if (HPlayers.Count < 1) break;
                     if (HPlayers[i].Index == args.Who)
                     {
                         HPlayers.RemoveAt(i);
@@ -375,7 +411,13 @@ namespace HousingDistricts
         }
 		public static bool Timeout(DateTime Start, int ms = 1000)
 		{
-			return (Start - DateTime.Now).TotalMilliseconds > ms;
+			bool ret = (Start - DateTime.Now).TotalMilliseconds > ms;
+			if (ret) 
+			{ 
+				TSPlayer.Server.SendErrorMessage("Hook timeout detected in HousingDisricts. You might want to report this.");
+				Log.Error("Hook timeout detected in HousingDisricts. You might want to report this.");
+			}
+			return ret;
 		}
     }
 }
