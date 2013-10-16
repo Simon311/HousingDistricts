@@ -143,7 +143,7 @@ namespace HousingDistricts
                                     }
                                     else
                                     {
-										if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
+										if ((width * height) >= maxSize)
                                         {
                                             ply.SendErrorMessage("Your house exceeds the maximum size of " + maxSize.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
@@ -462,7 +462,7 @@ namespace HousingDistricts
                                     }
                                     else
                                     {
-                                        if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
+                                        if ((width * height) >= maxSize)
                                         {
                                             ply.SendErrorMessage("Your house exceeds the maximum size of " + maxSize.ToString() + " blocks.");
                                             ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
