@@ -1,0 +1,38 @@
+Version 2.0.1.5:
+-Overall performance adjustment (hoping this will finally fix deadlocks)
+-Fixes for a few unnoticed things
+-Deprecated owners, visitors, debug (now it is all called /house info)
+-Adjusted permissions to work right.
+
+Version 2.0.1.4:
+-Not fixing anything, see next update.
+
+Version 2.0.1.2:
+-Crash-proofing. Causing deadlocks :p 
+
+Version 2.0.1.1:
+-Added check for "tshock.canchat" permission for /all command
+-Added /housewipe - Deletes all houses, do on fresh world, requires house.root permission
+-Forgot to mention in previous changelog: /house redefine will also reset WorldID to current ;)  .
+
+Version 2.0.1:
+-From now on we're making sure a house is not overlapping World's spawn point
+-Added /house disallow, /house delvisitor, /house visitors
+-Renamed /house owner to /house owners
+-From now on we're making sure that a user is not yet owner/visitor in /house allow and /house addvisitor
+-Bugfix for House Owners not being able to enter their own locked house
+-Updated /house help
+
+Version 2.0:
+-Ported to SQL Queries
+-Added /house reload (alias for /housereload)
+-Added /house lock (/changelock deprecated)
+-/house reload now reloads database as well
+-/converthouse deprecated
+-Minor performance fixes
+-Fixed /house lock not working with NotifyOnEntry = false
+-Fixed all the commands to report "No such house!" instead of just "Command failed"
+-Fixed some WorldID related stuff
+-Added "World Mismatch: " to /house debug
+-Added notification if "/house add" hits a house made in another world
+-Probably some other fixes/optimizations I forgot to mention
