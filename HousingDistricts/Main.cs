@@ -35,6 +35,11 @@ namespace HousingDistricts
 			get { return Assembly.GetExecutingAssembly().GetName().Version; }
         }
 
+		public static DateTime LastUpdate;
+		public static bool DeadLock = false;
+		public const int UpdateTimeout = 250;
+
+
 		// Done: Update Timer
 		// Done: Manage permissions inside /house
 		// Done: Use for on Lists instead of foreach
@@ -189,6 +194,20 @@ namespace HousingDistricts
 		public void OnUpdate(object sender, ElapsedEventArgs e)
         {
 			if (Main.worldID == 0) return;
+			if (LastUpdate != new DateTime() && Timeout(LastUpdate, 1000, false))
+			{
+				if (!DeadLock)
+				{
+					Console.WriteLine("Message from HousingDistricts: DeadLock detected.");
+					DeadLock = true;
+				}
+				return;
+			}
+			if (DeadLock)
+			{
+				Console.WriteLine("Message from HousingDistricts: Deadlock ended.");
+				DeadLock = false;
+			}
 			var Start = DateTime.Now;
 			if (Main.rand == null) Main.rand = new Random();
                 lock (HPlayers)
@@ -196,7 +215,7 @@ namespace HousingDistricts
 					var I = HousingDistricts.HPlayers.Count;
 					for (int i = 0; i < I; i++)
 					{
-						if (Timeout(Start, 2000)) return;
+						if (Timeout(Start, UpdateTimeout)) return;
 						var player = HousingDistricts.HPlayers[i];
                         List<string> NewCurHouses = new List<string>(player.CurHouses);
                         int HousesNotIn = 0;
@@ -205,7 +224,7 @@ namespace HousingDistricts
 							var J = HousingDistricts.Houses.Count;
 							for (int j = 0; j < J; j++)
 							{
-								if (Timeout(Start, 2000)) return;
+								if (Timeout(Start, UpdateTimeout)) return;
 								var house = HousingDistricts.Houses[j];
                                 try
                                 {
@@ -296,6 +315,7 @@ namespace HousingDistricts
 								var K = player.CurHouses.Count;
 								for (int k = 0; k < K; k++)
 								{
+									if (Timeout(Start, UpdateTimeout)) return;
 									var cHouse = player.CurHouses[k];
 									if (!NewCurHouses.Contains(cHouse))
 									{
@@ -326,8 +346,7 @@ namespace HousingDistricts
                         player.LastTilePos = new Vector2(player.TSPlayer.TileX, player.TSPlayer.TileY);
                     }
                 }
-            
-
+				LastUpdate = DateTime.Now;
         }
         public void OnChat(ServerChatEventArgs e)
         {
@@ -409,12 +428,12 @@ namespace HousingDistricts
                 }
             }
         }
-		public static bool Timeout(DateTime Start, int ms = 1000)
+		public static bool Timeout(DateTime Start, int ms = 500, bool warn = true)
 		{
-			bool ret = (Start - DateTime.Now).TotalMilliseconds > ms;
-			if (ret) 
+			bool ret = (DateTime.Now - Start).TotalMilliseconds >= ms;
+			if (warn && ret) 
 			{ 
-				TSPlayer.Server.SendErrorMessage("Hook timeout detected in HousingDisricts. You might want to report this.");
+				Console.WriteLine("Hook timeout detected in HousingDisricts. You might want to report this.");
 				Log.Error("Hook timeout detected in HousingDisricts. You might want to report this.");
 			}
 			return ret;
