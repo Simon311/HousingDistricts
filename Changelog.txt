@@ -1,3 +1,12 @@
+Version 2.0.1.7:
+-"Fixed" timers issue. Just made it detect if a timer thread got deadlocked.
+
+Version 2.0.1.6:
+-Added NotifyOwner, NotifyVisitor, NotifySelf in config, allows to control who gets the notifications and who does not
+-Added permissions: house.size.[int] and house.count.[int], allows to override config settings on maximum house size and maximum houses owned by a user for a certain group. Use like this: house.size.1000 or house.count.5
+-From now on players can't create houses that intersect any regions, unless they're allowed to build in the region their house intersects.
+-Some more optimizations, mostly on loops.
+
 Version 2.0.1.5:
 -Overall performance adjustment (hoping this will finally fix deadlocks)
 -Fixes for a few unnoticed things
