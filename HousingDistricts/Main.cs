@@ -79,7 +79,8 @@ namespace HousingDistricts
                 ServerApi.Hooks.NetGreetPlayer.Deregister(this, OnGreetPlayer);
                 ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
                 ServerApi.Hooks.NetGetData.Deregister(this, GetData);
-				Update.Dispose();
+				Update.Elapsed -= OnUpdate;
+				Update.Stop();
             }
             base.Dispose(disposing);
         }
@@ -194,7 +195,7 @@ namespace HousingDistricts
 		public void OnUpdate(object sender, ElapsedEventArgs e)
         {
 			if (Main.worldID == 0) return;
-			if (LastUpdate != new DateTime() && Timeout(LastUpdate, 1000, false))
+			if (LastUpdate != new DateTime() && Timeout(LastUpdate, 2000, false))
 			{
 				if (!DeadLock)
 				{
