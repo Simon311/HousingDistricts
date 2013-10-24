@@ -432,7 +432,7 @@ namespace HousingDistricts
 		public static bool Timeout(DateTime Start, int ms = 500, bool warn = true)
 		{
 			bool ret = (DateTime.Now - Start).TotalMilliseconds >= ms;
-			if (!warn) LastUpdate = DateTime.Now;
+			if (ms == UpdateTimeout) LastUpdate = DateTime.Now;
 			if (warn && ret) 
 			{ 
 				Console.WriteLine("Hook timeout detected in HousingDisricts. You might want to report this.");
