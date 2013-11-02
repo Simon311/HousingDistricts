@@ -146,7 +146,7 @@ namespace HousingDistricts
 
             try
             {
-                string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
+                string query = "UPDATE HousingDistrict SET Visitors=@0 WHERE Name=@1";
 
                 TShock.DB.Query(query, sb.ToString(), house.Name);
             }
@@ -176,7 +176,7 @@ namespace HousingDistricts
 
             try
             {
-                string query = "UPDATE HousingDistrict SET Owners=@0 WHERE Name=@1";
+                string query = "UPDATE HousingDistrict SET Visitors=@0 WHERE Name=@1";
 
                 TShock.DB.Query(query, sb.ToString(), house.Name);
             }

@@ -35,9 +35,8 @@ namespace HousingDistricts
 			get { return Assembly.GetExecutingAssembly().GetName().Version; }
         }
 
-		public static DateTime LastUpdate;
-		public static bool DeadLock = false;
-		public const int UpdateTimeout = 250;
+		public static bool ULock = false;
+		public const int UpdateTimeout = 400;
 
 
 		// Done: Update Timer
@@ -195,20 +194,8 @@ namespace HousingDistricts
 		public void OnUpdate(object sender, ElapsedEventArgs e)
         {
 			if (Main.worldID == 0) return;
-			if (LastUpdate != new DateTime() && Timeout(LastUpdate, 2000, false))
-			{
-				if (!DeadLock)
-				{
-					Console.WriteLine("Message from HousingDistricts: DeadLock detected.");
-					DeadLock = true;
-				}
-				return;
-			}
-			if (DeadLock)
-			{
-				Console.WriteLine("Message from HousingDistricts: Deadlock ended.");
-				DeadLock = false;
-			}
+			if (ULock) return;
+			ULock = true;
 			var Start = DateTime.Now;
 			if (Main.rand == null) Main.rand = new Random();
                 lock (HPlayers)
@@ -347,7 +334,7 @@ namespace HousingDistricts
                         player.LastTilePos = new Vector2(player.TSPlayer.TileX, player.TSPlayer.TileY);
                     }
                 }
-				LastUpdate = DateTime.Now;
+				ULock = false;
         }
         public void OnChat(ServerChatEventArgs e)
         {
@@ -432,7 +419,7 @@ namespace HousingDistricts
 		public static bool Timeout(DateTime Start, int ms = 500, bool warn = true)
 		{
 			bool ret = (DateTime.Now - Start).TotalMilliseconds >= ms;
-			if (ms == UpdateTimeout) LastUpdate = DateTime.Now;
+			if (ms == UpdateTimeout && ret) ULock = false;
 			if (warn && ret) 
 			{ 
 				Console.WriteLine("Hook timeout detected in HousingDisricts. You might want to report this.");

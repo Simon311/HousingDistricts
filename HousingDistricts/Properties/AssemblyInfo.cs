@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Resources;
 
 [assembly: AssemblyTitle("HousingDistricts")]
 [assembly: AssemblyDescription("")]
@@ -13,5 +14,6 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("0a5768cf-c989-4577-b577-801916f89c41")]
 
-[assembly: AssemblyVersion("2.0.1.9")]
-[assembly: AssemblyFileVersion("2.0.1.9")]
+[assembly: AssemblyVersion("2.0.2.0")]
+[assembly: AssemblyFileVersion("2.0.2.0")]
+[assembly: NeutralResourcesLanguageAttribute("en-US")]
