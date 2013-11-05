@@ -86,12 +86,10 @@ namespace HousingDistricts
 
         public static bool OwnsHouse(string UserID, string housename)
         {
-            if (UserID == null || UserID == String.Empty || UserID == "0" || housename == null || housename == String.Empty)
-            {
-                return false;
-            }
-            if (HouseTools.GetHouseByName(housename) == null) { return false; }
-            return OwnsHouse(UserID, HouseTools.GetHouseByName(housename));
+            if (UserID == null || UserID == String.Empty || UserID == "0" || housename == null || housename == String.Empty) return false;
+			House H = HouseTools.GetHouseByName(housename);
+            if (H == null) return false;
+            return OwnsHouse(UserID, H);
         }
 
         public static bool OwnsHouse(string UserID, House house)

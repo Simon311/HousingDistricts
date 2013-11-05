@@ -1,3 +1,8 @@
+Version 2.0.2.1:
+-Fixed some bugs
+-Added Paint protection
+-Added TP protection
+
 Version 2.0.2.0:
 -Fixed visitor commands editing owners instead
 -Removed deadlock detection

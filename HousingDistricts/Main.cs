@@ -350,12 +350,14 @@ namespace HousingDistricts
                     if (text[0] == '/')
                         return;
 
-                    var tsplr = TShock.Players[msg.whoAmI];
+                    var tsplr = TShock.Players[e.Who];
 					var I = HousingDistricts.Houses.Count;
 					for (int i = 0; i < I; i++)
 					{
 						if (Timeout(Start)) return;
-						var house = HousingDistricts.Houses[i];
+						House house;
+						try { house = HousingDistricts.Houses[i]; }
+						catch { continue; }
 						if (!HouseTools.WorldMismatch(house) && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
                         {
                             HTools.BroadcastToHouse(house, text, tsplr.Name);

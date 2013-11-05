@@ -40,6 +40,8 @@ namespace HousingDistricts
         public string MaxHousesByUsername_description = "Maximum amount of houses a user can have (unless has persmission house.bypasscount).";
         public bool OverlapHouses = false;
         public string OverlapHouses_description = "Can players create houses that overlap another players' house?";
+		public bool AllowRod = true;
+		public string AllowRod_description = "Can players use RoD to teleport into houses?";
 
         public static HConfigFile Read(string path)
         {
