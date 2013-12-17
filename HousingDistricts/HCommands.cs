@@ -731,8 +731,7 @@ namespace HousingDistricts
                         ply.SendMessage("/house set 1", Color.Lime);
                         ply.SendMessage("/house set 2", Color.Lime);
                         ply.SendMessage("/house add HouseName", Color.Lime);
-                        ply.SendMessage("Other /house commands: list, allow, disallow, redefine, name, delete, clear, info,", Color.Lime);
-                        ply.SendMessage("                           chat, addvisitor, delvisitor, lock, reload", Color.Lime);
+						ply.SendMessage("Other /house commands: list, allow, disallow, redefine, name, delete, clear, info, chat, addvisitor, delvisitor, lock, reload", Color.Lime);
                         break;
                     }
             }

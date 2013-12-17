@@ -134,7 +134,7 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Visitors.Add(id);
-			var I = house.Owners.Count;
+			var I = house.Visitors.Count;
 			for (int i = 0; i < I; i++)
 			{
 				var visitor = house.Visitors[i];
@@ -164,7 +164,7 @@ namespace HousingDistricts
             StringBuilder sb = new StringBuilder();
             int count = 0;
             house.Visitors.Remove(id);
-			var I = house.Owners.Count;
+			var I = house.Visitors.Count;
 			for (int i = 0; i < I; i++)
 			{
 				var visitor = house.Visitors[i];

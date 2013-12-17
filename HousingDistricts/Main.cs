@@ -38,21 +38,7 @@ namespace HousingDistricts
 		public static bool ULock = false;
 		public const int UpdateTimeout = 400;
 
-
-		// Done: Update Timer
-		// Done: Manage permissions inside /house
-		// Done: Use for on Lists instead of foreach
-		// Note: Do NOT replace for, its faster for Lists than Foreach. Yes, there are studies proving that. No, there is no difference for arrays.
-
-		// Done: Added house.count.[int], house.size.[int] #tested
-		// Done: Added NotifyOwner, NotifyUser, NotifySelf #tested
-		// Done: Check if a house Intersects any regions. #tested
-
-
-		// TODO: Add UUID support --Not sure when will implement this
-		// TODO: Add owners+builders instead of just owners --Same for this
-		// TODO: Add Caching User Info?
-
+		// Note: Do NOT replace for, its faster for Lists than Foreach. Yes, there are studies proving that. No, there is no such difference for arrays.
 
 		static readonly System.Timers.Timer Update = new System.Timers.Timer(500);
 
@@ -424,8 +410,8 @@ namespace HousingDistricts
 			if (ms == UpdateTimeout && ret) ULock = false;
 			if (warn && ret) 
 			{ 
-				Console.WriteLine("Hook timeout detected in HousingDisricts. You might want to report this.");
-				Log.Error("Hook timeout detected in HousingDisricts. You might want to report this.");
+				Console.WriteLine("Hook timeout detected in HousingDistricts. You might want to report this.");
+				Log.Error("Hook timeout detected in HousingDistricts. You might want to report this.");
 			}
 			return ret;
 		}
