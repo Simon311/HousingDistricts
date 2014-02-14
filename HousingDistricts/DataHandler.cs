@@ -66,6 +66,7 @@ namespace HousingDistricts
         private static bool HandleSendTileSquare(GetDataHandlerArgs args)
         {
 			var Start = DateTime.Now;
+
             short size = args.Data.ReadInt16();
             int tilex = args.Data.ReadInt32();
             int tiley = args.Data.ReadInt32();
@@ -96,7 +97,9 @@ namespace HousingDistricts
 		private static bool HandleTeleport(GetDataHandlerArgs args)
 		{
 			if (HousingDistricts.HConfig.AllowRod || args.Player.Group.HasPermission(TPHouse)) return false;
+
 			var Start = DateTime.Now;
+
 			var Flags = args.Data.ReadInt8();
 			var ID = args.Data.ReadInt16();
 			var X = args.Data.ReadSingle();
@@ -129,6 +132,7 @@ namespace HousingDistricts
 		private static bool HandlePaintTile(GetDataHandlerArgs args)
 		{
 			var Start = DateTime.Now;
+
 			var X = args.Data.ReadInt32();
 			var Y = args.Data.ReadInt32();
 			var T = args.Data.ReadInt8();
@@ -159,6 +163,7 @@ namespace HousingDistricts
 		private static bool HandlePaintWall(GetDataHandlerArgs args)
 		{
 			var Start = DateTime.Now;
+
 			var X = args.Data.ReadInt32();
 			var Y = args.Data.ReadInt32();
 			var T = args.Data.ReadInt8();
@@ -189,10 +194,12 @@ namespace HousingDistricts
         private static bool HandleTile(GetDataHandlerArgs args)
         {
 			var Start = DateTime.Now;
+
             byte type = args.Data.ReadInt8();
             int x = args.Data.ReadInt32();
             int y = args.Data.ReadInt32();
 			ushort tiletype = args.Data.ReadUInt16();
+
             var player = HTools.GetPlayerByID(args.Player.Index);
 
             int tilex = Math.Abs(x);
@@ -257,10 +264,13 @@ namespace HousingDistricts
         private static bool HandleLiquidSet(GetDataHandlerArgs args)
         {
 			var Start = DateTime.Now;
+
             int x = args.Data.ReadInt32();
             int y = args.Data.ReadInt32();
+
             int plyX = Math.Abs(args.Player.TileX);
             int plyY = Math.Abs(args.Player.TileY);
+
             int tilex = Math.Abs(x);
             int tiley = Math.Abs(y);
 
@@ -290,8 +300,11 @@ namespace HousingDistricts
         private static bool HandleTileKill(GetDataHandlerArgs args)
         {
 			var Start = DateTime.Now;
-            int x = args.Data.ReadInt32();
-            int y = args.Data.ReadInt32();
+
+			int action = args.Data.ReadByte();
+			int x = args.Data.ReadInt16();
+			int y = args.Data.ReadInt16();
+
             int tilex = Math.Abs(x);
             int tiley = Math.Abs(y);
             var player = HTools.GetPlayerByID(args.Player.Index);

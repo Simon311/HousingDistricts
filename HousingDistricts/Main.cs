@@ -38,7 +38,7 @@ namespace HousingDistricts
 		public static bool ULock = false;
 		public const int UpdateTimeout = 400;
 
-		// Note: Do NOT replace for, its faster for Lists than Foreach. Yes, there are studies proving that. No, there is no such difference for arrays.
+		// Note: Do NOT replace for, its faster for Lists than Foreach (or Linq, huh). Yes, there are studies proving that. No, there is no such difference for arrays.
 
 		static readonly System.Timers.Timer Update = new System.Timers.Timer(500);
 
