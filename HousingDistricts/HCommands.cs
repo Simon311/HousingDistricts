@@ -758,7 +758,7 @@ namespace HousingDistricts
                     }
                     else
                     {
-                        tsplr.SendErrorMessage("You are muted!");
+						tsplr.SendErrorMessage("You are muted!");
                     }
                 }
             }
