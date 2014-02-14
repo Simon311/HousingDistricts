@@ -192,7 +192,7 @@ namespace HousingDistricts
             byte type = args.Data.ReadInt8();
             int x = args.Data.ReadInt32();
             int y = args.Data.ReadInt32();
-            byte tiletype = args.Data.ReadInt8();
+			ushort tiletype = args.Data.ReadUInt16();
             var player = HTools.GetPlayerByID(args.Player.Index);
 
             int tilex = Math.Abs(x);
