@@ -50,7 +50,7 @@ namespace HousingDistricts
             ServerApi.Hooks.ServerChat.Register(this, OnChat, 5);
             ServerApi.Hooks.NetGreetPlayer.Register(this, OnGreetPlayer, -5);
             ServerApi.Hooks.ServerLeave.Register(this, OnLeave, 5);
-            ServerApi.Hooks.NetGetData.Register(this, GetData);
+            ServerApi.Hooks.NetGetData.Register(this, GetData, 10);
             GetDataHandlers.InitGetDataHandler();
 			Update.Elapsed += OnUpdate;
 			Update.Start();

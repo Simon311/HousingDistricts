@@ -38,7 +38,7 @@ namespace HousingDistricts
             {
                 {PacketTypes.Tile, HandleTile},
                 {PacketTypes.TileSendSquare, HandleSendTileSquare},
-                {PacketTypes.TileKill, HandleTileKill},
+                {PacketTypes.TileKill, HandleChest},
                 {PacketTypes.LiquidSet, HandleLiquidSet},
 				{PacketTypes.Teleport, HandleTeleport},
 				{PacketTypes.PaintTile, HandlePaintTile},
@@ -297,7 +297,7 @@ namespace HousingDistricts
             return false;
         }
 
-        private static bool HandleTileKill(GetDataHandlerArgs args)
+        private static bool HandleChest(GetDataHandlerArgs args)
         {
 			var Start = DateTime.Now;
 
@@ -351,7 +351,7 @@ namespace HousingDistricts
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
 						var house = HousingDistricts.Houses[i];
-						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
+						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 3, 3)) && !HouseTools.WorldMismatch(house))
                         {
                             if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
                             {
