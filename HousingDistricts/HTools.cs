@@ -86,7 +86,7 @@ namespace HousingDistricts
 
         public static bool OwnsHouse(string UserID, string housename)
         {
-            if (UserID == null || UserID == String.Empty || UserID == "0" || housename == null || housename == String.Empty) return false;
+            if (String.IsNullOrWhiteSpace(UserID) || UserID == "0" || String.IsNullOrEmpty(housename)) return false;
 			House H = HouseTools.GetHouseByName(housename);
             if (H == null) return false;
             return OwnsHouse(UserID, H);
@@ -97,18 +97,12 @@ namespace HousingDistricts
             bool isAdmin = false;
             try { isAdmin = TShock.Groups.GetGroupByName(TShock.Users.GetUserByID(Convert.ToInt32(UserID)).Group).HasPermission("house.root"); }
             catch {}
-            if (UserID != null && UserID != String.Empty && UserID != "0" && house != null)
+            if (!String.IsNullOrEmpty(UserID) && UserID != "0" && house != null)
             {
                 try
                 {
-                    if (house.Owners.Contains(UserID) || isAdmin)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    if (house.Owners.Contains(UserID) || isAdmin) return true;
+                    else return false;
                 }
                 catch (Exception ex)
                 {

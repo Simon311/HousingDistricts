@@ -36,7 +36,7 @@ namespace HousingDistricts
         }
 
 		public static bool ULock = false;
-		public const int UpdateTimeout = 400;
+		public const int UpdateTimeout = 500;
 
 		// Note: Do NOT replace for, its faster for Lists than Foreach (or Linq, huh). Yes, there are studies proving that. No, there is no such difference for arrays.
 
@@ -327,16 +327,33 @@ namespace HousingDistricts
 			var Start = DateTime.Now;
             var msg = e.Buffer;
             var ply = e.Who;
+			var tsplr = TShock.Players[e.Who];
             var text = e.Text;
 
             if (!e.Handled)
             {
+				if (text.StartsWith("/grow"))
+				{
+					if (!tsplr.Group.HasPermission(Permissions.grow)) return;
+					var I = Houses.Count;
+
+					for (int i = 0; i < I; i++)
+					{
+						if (!HTools.OwnsHouse(tsplr.UserID.ToString(), Houses[i]) && Houses[i].HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
+						{
+							e.Handled = true;
+							tsplr.SendErrorMessage("You can't build here!");
+							return;
+						}
+					}
+					return;
+				}
+
                 if (HConfig.HouseChatEnabled)
                 {
                     if (text[0] == '/')
                         return;
 
-                    var tsplr = TShock.Players[e.Who];
 					var I = HousingDistricts.Houses.Count;
 					for (int i = 0; i < I; i++)
 					{
@@ -404,7 +421,7 @@ namespace HousingDistricts
                 }
             }
         }
-		public static bool Timeout(DateTime Start, int ms = 500, bool warn = true)
+		public static bool Timeout(DateTime Start, int ms = 600, bool warn = true)
 		{
 			bool ret = (DateTime.Now - Start).TotalMilliseconds >= ms;
 			if (ms == UpdateTimeout && ret) ULock = false;
