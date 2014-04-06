@@ -139,7 +139,7 @@ namespace HousingDistricts
 				Match Match = Regex.Match(perm, "house\\.size\\.(\\d+)");
 				if (Match.Success && Match.Value == perm)
 				{
-					Console.WriteLine(Convert.ToInt32(Match.Groups[1].Value));
+					//Console.WriteLine(Convert.ToInt32(Match.Groups[1].Value));
 					return Convert.ToInt32(Match.Groups[1].Value);
 				}
 			}
