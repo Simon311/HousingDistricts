@@ -68,8 +68,8 @@ namespace HousingDistricts
 			var Start = DateTime.Now;
 
             short size = args.Data.ReadInt16();
-            int tilex = args.Data.ReadInt32();
-            int tiley = args.Data.ReadInt32();
+            int tilex = args.Data.ReadInt16();
+            int tiley = args.Data.ReadInt16();
 
             if (!args.Player.Group.HasPermission(EditHouse))
             {
@@ -133,8 +133,8 @@ namespace HousingDistricts
 		{
 			var Start = DateTime.Now;
 
-			var X = args.Data.ReadInt32();
-			var Y = args.Data.ReadInt32();
+			var X = args.Data.ReadInt16();
+			var Y = args.Data.ReadInt16();
 			var T = args.Data.ReadInt8();
 
 			if (!args.Player.Group.HasPermission(EditHouse))
@@ -164,8 +164,8 @@ namespace HousingDistricts
 		{
 			var Start = DateTime.Now;
 
-			var X = args.Data.ReadInt32();
-			var Y = args.Data.ReadInt32();
+			var X = args.Data.ReadInt16();
+			var Y = args.Data.ReadInt16();
 			var T = args.Data.ReadInt8();
 
 			if (!args.Player.Group.HasPermission(EditHouse))
@@ -196,8 +196,8 @@ namespace HousingDistricts
 			var Start = DateTime.Now;
 
             byte type = args.Data.ReadInt8();
-            int x = args.Data.ReadInt32();
-            int y = args.Data.ReadInt32();
+            int x = args.Data.ReadInt16();
+            int y = args.Data.ReadInt16();
 			ushort tiletype = args.Data.ReadUInt16();
 
             var player = HTools.GetPlayerByID(args.Player.Index);
@@ -265,8 +265,8 @@ namespace HousingDistricts
         {
 			var Start = DateTime.Now;
 
-            int x = args.Data.ReadInt32();
-            int y = args.Data.ReadInt32();
+            int x = args.Data.ReadInt16();
+            int y = args.Data.ReadInt16();
 
             int plyX = Math.Abs(args.Player.TileX);
             int plyY = Math.Abs(args.Player.TileY);
