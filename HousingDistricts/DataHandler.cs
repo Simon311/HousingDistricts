@@ -9,90 +9,87 @@ using System.IO.Streams;
 
 namespace HousingDistricts
 {
-    public delegate bool GetDataHandlerDelegate(GetDataHandlerArgs args);
-    public class GetDataHandlerArgs : EventArgs
-    {
-        public TSPlayer Player { get; private set; }
-        public MemoryStream Data { get; private set; }
+	public delegate bool GetDataHandlerDelegate(GetDataHandlerArgs args);
+	public class GetDataHandlerArgs : EventArgs
+	{
+		public TSPlayer Player { get; private set; }
+		public MemoryStream Data { get; private set; }
 
-        public Player TPlayer
-        {
-            get { return Player.TPlayer; }
-        }
+		public Player TPlayer
+		{
+			get { return Player.TPlayer; }
+		}
 
-        public GetDataHandlerArgs(TSPlayer player, MemoryStream data)
-        {
-            Player = player;
-            Data = data;
-        }
-    }
-    public static class GetDataHandlers
-    {
-        static string EditHouse = "house.edit";
+		public GetDataHandlerArgs(TSPlayer player, MemoryStream data)
+		{
+			Player = player;
+			Data = data;
+		}
+	}
+	public static class GetDataHandlers
+	{
+		static string EditHouse = "house.edit";
 		static string TPHouse = "house.rod";
-        private static Dictionary<PacketTypes, GetDataHandlerDelegate> GetDataHandlerDelegates;
+		private static Dictionary<PacketTypes, GetDataHandlerDelegate> GetDataHandlerDelegates;
 
-        public static void InitGetDataHandler()
-        {
-            GetDataHandlerDelegates = new Dictionary<PacketTypes, GetDataHandlerDelegate>
-            {
-                {PacketTypes.Tile, HandleTile},
-                {PacketTypes.TileSendSquare, HandleSendTileSquare},
-                {PacketTypes.TileKill, HandleChest},
-                {PacketTypes.LiquidSet, HandleLiquidSet},
+		public static void InitGetDataHandler()
+		{
+			GetDataHandlerDelegates = new Dictionary<PacketTypes, GetDataHandlerDelegate>
+			{
+				{PacketTypes.Tile, HandleTile},
+				{PacketTypes.TileSendSquare, HandleSendTileSquare},
+				{PacketTypes.TileKill, HandleChest},
+				{PacketTypes.LiquidSet, HandleLiquidSet},
 				{PacketTypes.Teleport, HandleTeleport},
 				{PacketTypes.PaintTile, HandlePaintTile},
 				{PacketTypes.PaintWall, HandlePaintWall},
-            };
-        }
+			};
+		}
 
-        public static bool HandlerGetData(PacketTypes type, TSPlayer player, MemoryStream data)
-        {
-            GetDataHandlerDelegate handler;
-            if (GetDataHandlerDelegates.TryGetValue(type, out handler))
-            {
-                try
-                {
-                    return handler(new GetDataHandlerArgs(player, data));
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.ToString());
-                }
-            }
-            return false;
-        }
+		public static bool HandlerGetData(PacketTypes type, TSPlayer player, MemoryStream data)
+		{
+			GetDataHandlerDelegate handler;
+			if (GetDataHandlerDelegates.TryGetValue(type, out handler))
+			{
+				try
+				{
+					return handler(new GetDataHandlerArgs(player, data));
+				}
+				catch (Exception ex)
+				{
+					TShock.Log.Error(ex.ToString());
+				}
+			}
+			return false;
+		}
 
-        private static bool HandleSendTileSquare(GetDataHandlerArgs args)
-        {
+		private static bool HandleSendTileSquare(GetDataHandlerArgs args)
+		{
 			var Start = DateTime.Now;
 
-            short size = args.Data.ReadInt16();
-            int tilex = args.Data.ReadInt16();
-            int tiley = args.Data.ReadInt16();
+			short size = args.Data.ReadInt16();
+			int tilex = args.Data.ReadInt16();
+			int tiley = args.Data.ReadInt16();
 
-            if (!args.Player.Group.HasPermission(EditHouse))
-            {
-                lock (HousingDistricts.HPlayers)
-                {
-					var I = HousingDistricts.Houses.Count;
-					for (int i = 0; i < I; i++)
+			if (!args.Player.Group.HasPermission(EditHouse))
+			{
+				lock (HousingDistricts.HPlayers)
+				{
+					return House.HandlerAction((house) =>
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
-						{
 							if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
 							{
 								args.Player.SendTileSquare(tilex, tiley);
 								return true;
 							}
-						}
-					}
-                }
-            }
-            return false;
-        }
+						return false;
+					});
+				}
+			}
+			return false;
+		}
 
 		private static bool HandleTeleport(GetDataHandlerArgs args)
 		{
@@ -109,21 +106,18 @@ namespace HousingDistricts
 			{
 				lock (HousingDistricts.HPlayers)
 				{
-					var I = HousingDistricts.Houses.Count;
-					for (int i = 0; i < I; i++)
+					return House.HandlerAction((house) =>
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle((int)(X / 16), (int)(Y / 16), 1, 1)) && !HouseTools.WorldMismatch(house))
-						{
 							if (!HTools.CanVisitHouse(args.Player.UserID.ToString(), house))
 							{
 								args.Player.SendErrorMessage(string.Format("You do not have permission to teleport into house '{0}'.", house.Name));
 								args.Player.Teleport(args.TPlayer.position.X, args.TPlayer.position.Y);
 								return true;
 							}
-						}
-					}
+						return false;
+					});
 				}
 			}
 			return false;
@@ -141,20 +135,17 @@ namespace HousingDistricts
 			{
 				lock (HousingDistricts.HPlayers)
 				{
-					var I = HousingDistricts.Houses.Count;
-					for (int i = 0; i < I; i++)
+					return House.HandlerAction((house) =>
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(X, Y, 1, 1)) && !HouseTools.WorldMismatch(house))
-						{
 							if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
 							{
 								args.Player.SendData(PacketTypes.PaintTile, "", X, Y, Main.tile[X, Y].color());
 								return true;
 							}
-						}
-					}
+						return false;
+					});
 				}
 			}
 			return false;
@@ -172,197 +163,176 @@ namespace HousingDistricts
 			{
 				lock (HousingDistricts.HPlayers)
 				{
-					var I = HousingDistricts.Houses.Count;
-					for (int i = 0; i < I; i++)
+					return House.HandlerAction((house) =>
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(X, Y, 1, 1)) && !HouseTools.WorldMismatch(house))
-						{
 							if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
 							{
 								args.Player.SendData(PacketTypes.PaintWall, "", X, Y, Main.tile[X, Y].wallColor());
 								return true;
 							}
-						}
-					}
+						return false;
+					});
 				}
 			}
 			return false;
 		}
 
-        private static bool HandleTile(GetDataHandlerArgs args)
-        {
+		private static bool HandleTile(GetDataHandlerArgs args)
+		{
 			var Start = DateTime.Now;
 
-            byte type = args.Data.ReadInt8();
-            int x = args.Data.ReadInt16();
-            int y = args.Data.ReadInt16();
+			byte type = args.Data.ReadInt8();
+			int x = args.Data.ReadInt16();
+			int y = args.Data.ReadInt16();
 			ushort tiletype = args.Data.ReadUInt16();
 
-            var player = HTools.GetPlayerByID(args.Player.Index);
+			var player = HTools.GetPlayerByID(args.Player.Index);
 
-            int tilex = Math.Abs(x);
-            int tiley = Math.Abs(y);
+			int tilex = Math.Abs(x);
+			int tiley = Math.Abs(y);
 
-            if (player.AwaitingHouseName)
-            {
-                if (HTools.InAreaHouseName(x, y) == null)
-                {
-                    args.Player.SendMessage("Tile is not in any House", Color.Yellow);
-                }
-                else
-                {
-                    args.Player.SendMessage("House Name: " + HTools.InAreaHouseName(x, y), Color.Yellow);
-                }
-                args.Player.SendTileSquare(x, y);
-                player.AwaitingHouseName = false;
-                return true;
-            }
+			if (player.AwaitingHouseName)
+			{
+				if (HTools.InAreaHouseName(x, y) == null)
+					args.Player.SendMessage("Tile is not in any House", Color.Yellow);
+				else
+					args.Player.SendMessage("House Name: " + HTools.InAreaHouseName(x, y), Color.Yellow);
 
-            if (args.Player.AwaitingTempPoint > 0)
-            {
-                args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = x;
-                args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
-                if (args.Player.AwaitingTempPoint == 1)
-                {
-                    args.Player.SendMessage("Top-left corner of protection area has been set!", Color.Yellow);
-                }
-                if (args.Player.AwaitingTempPoint == 2)
-                {
-                    args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
-                }
+				args.Player.SendTileSquare(x, y);
+				player.AwaitingHouseName = false;
+				return true;
+			}
 
-                args.Player.SendTileSquare(x, y);
-                args.Player.AwaitingTempPoint = 0;
-                return true;
-            }
+			if (args.Player.AwaitingTempPoint > 0)
+			{
+				args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = x;
+				args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
 
-            if (!args.Player.Group.HasPermission(EditHouse))
-            {
-                lock (HousingDistricts.HPlayers)
-                {
-					var I = HousingDistricts.Houses.Count;
-					for (int i = 0; i < I; i++)
+				if (args.Player.AwaitingTempPoint == 1)
+					args.Player.SendMessage("Top-left corner of protection area has been set!", Color.Yellow);
+
+				if (args.Player.AwaitingTempPoint == 2)
+					args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
+
+				args.Player.SendTileSquare(x, y);
+				args.Player.AwaitingTempPoint = 0;
+				return true;
+			}
+
+			if (!args.Player.Group.HasPermission(EditHouse))
+			{
+				lock (HousingDistricts.HPlayers)
+				{
+					return House.HandlerAction((house) =>
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
-                        {
-                            if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
-                            {
-                                args.Player.SendTileSquare(tilex, tiley);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
+							if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
+							{
+								args.Player.SendTileSquare(tilex, tiley);
+								return true;
+							}
+						return false;
+					});
+				}
+			}
+			return false;
+		}
 
-        private static bool HandleLiquidSet(GetDataHandlerArgs args)
-        {
+		private static bool HandleLiquidSet(GetDataHandlerArgs args)
+		{
 			var Start = DateTime.Now;
 
-            int x = args.Data.ReadInt16();
-            int y = args.Data.ReadInt16();
+			int x = args.Data.ReadInt16();
+			int y = args.Data.ReadInt16();
 
-            int plyX = Math.Abs(args.Player.TileX);
-            int plyY = Math.Abs(args.Player.TileY);
+			/*
+			int plyX = Math.Abs(args.Player.TileX);
+			int plyY = Math.Abs(args.Player.TileY);
+			*/
 
-            int tilex = Math.Abs(x);
-            int tiley = Math.Abs(y);
+			int tilex = Math.Abs(x);
+			int tiley = Math.Abs(y);
 
-            if (!args.Player.Group.HasPermission(EditHouse))
-            {
-                lock (HousingDistricts.HPlayers)
-                {
-					var I = HousingDistricts.Houses.Count;
-					for (int i = 0; i < I; i++)
+			if (!args.Player.Group.HasPermission(EditHouse))
+			{
+				lock (HousingDistricts.HPlayers)
+				{
+					return House.HandlerAction((house) =>
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 1, 1)) && !HouseTools.WorldMismatch(house))
-                        {
-                            if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
-                            {
-                                args.Player.SendTileSquare(tilex, tiley);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
+							if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
+							{
+								args.Player.SendTileSquare(tilex, tiley);
+								return true;
+							}
+						return false;
+					});
+				}
+			}
+			return false;
+		}
 
-        private static bool HandleChest(GetDataHandlerArgs args)
-        {
+		private static bool HandleChest(GetDataHandlerArgs args)
+		{
 			var Start = DateTime.Now;
 
 			int action = args.Data.ReadByte();
 			int x = args.Data.ReadInt16();
 			int y = args.Data.ReadInt16();
 
-            int tilex = Math.Abs(x);
-            int tiley = Math.Abs(y);
-            var player = HTools.GetPlayerByID(args.Player.Index);
+			int tilex = Math.Abs(x);
+			int tiley = Math.Abs(y);
+			var player = HTools.GetPlayerByID(args.Player.Index);
 
-            if (player.AwaitingHouseName)
-            {
-                if (HTools.InAreaHouseName(x, y) == null)
-                {
-                    args.Player.SendMessage("Tile is not in any House", Color.Yellow);
-                }
-                else
-                {
-                    args.Player.SendMessage("House Name: " + HTools.InAreaHouseName(x, y), Color.Yellow);
-                }
-                args.Player.SendTileSquare(x, y);
-                player.AwaitingHouseName = false;
-                return true;
-            }
+			if (player.AwaitingHouseName)
+			{
+				if (HTools.InAreaHouseName(x, y) == null)
+					args.Player.SendMessage("Tile is not in any House", Color.Yellow);
+				else
+					args.Player.SendMessage("House Name: " + HTools.InAreaHouseName(x, y), Color.Yellow);
 
-            if (args.Player.AwaitingTempPoint > 0)
-            {
-                args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = x;
-                args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
-                if (args.Player.AwaitingTempPoint == 1)
-                {
-                    args.Player.SendMessage("Top-left corner of protection area has been set!", Color.Yellow);
-                }
-                if (args.Player.AwaitingTempPoint == 2)
-                {
-                    args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
-                }
+				args.Player.SendTileSquare(x, y);
+				player.AwaitingHouseName = false;
+				return true;
+			}
 
-                args.Player.SendTileSquare(x, y);
-                args.Player.AwaitingTempPoint = 0;
-                return true;
-            }
+			if (args.Player.AwaitingTempPoint > 0)
+			{
+				args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = x;
+				args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
+				if (args.Player.AwaitingTempPoint == 1)
+					args.Player.SendMessage("Top-left corner of protection area has been set!", Color.Yellow);
 
-            if (!args.Player.Group.HasPermission(EditHouse))
-            {
-                lock (HousingDistricts.HPlayers)
-                {
-					var I = HousingDistricts.Houses.Count;
-					for (int i = 0; i < I; i++)
+				if (args.Player.AwaitingTempPoint == 2)
+					args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
+
+				args.Player.SendTileSquare(x, y);
+				args.Player.AwaitingTempPoint = 0;
+				return true;
+			}
+
+			if (!args.Player.Group.HasPermission(EditHouse))
+			{
+				lock (HousingDistricts.HPlayers)
+				{
+					return House.HandlerAction((house) =>
 					{
 						if (HousingDistricts.Timeout(Start)) return false;
-						var house = HousingDistricts.Houses[i];
 						if (house != null && house.HouseArea.Intersects(new Rectangle(tilex, tiley, 3, 3)) && !HouseTools.WorldMismatch(house))
-                        {
-                            if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
-                            {
-                                args.Player.SendTileSquare(tilex, tiley);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-    }
+							if (!HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
+							{
+								args.Player.SendTileSquare(tilex, tiley);
+								return true;
+							}
+						return false;
+					});
+				}
+			}
+			return false;
+		}
+	}
 }

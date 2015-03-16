@@ -12,12 +12,7 @@ namespace HousingDistricts
 		public Vector2 LastTilePos { get; set; }
 		public bool AwaitingHouseName { get; set; }
 
-		public HPlayer()
-		{
-			Index = -1;
-			CurHouses = new List<string>();
-			LastTilePos = Vector2.Zero;
-		}
+		public HPlayer() : this(-1, Vector2.Zero) { }
 
 		public HPlayer(int index, Vector2 lasttilepos)
 		{
