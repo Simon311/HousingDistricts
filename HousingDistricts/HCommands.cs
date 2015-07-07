@@ -128,7 +128,7 @@ namespace HousingDistricts
 											ply.TempPoints[1] = Point.Zero;
 											ply.SendMessage("You have created new house " + houseName, Color.Yellow);
 											HouseTools.AddNewUser(houseName, ply.UserID.ToString());
-											TShock.Log.ConsoleInfo("{0} has created a new house: \"{1}\".", ply.UserAccountName, houseName);
+											TShock.Log.ConsoleInfo("{0} has created a new house: \"{1}\".", ply.User.Name, houseName);
 										}
 										else
 										{
@@ -200,7 +200,7 @@ namespace HousingDistricts
 										if (HouseTools.AddNewUser(houseName, playerID.ID.ToString()))
 										{
 											ply.SendMessage("Added user " + playerName + " to " + houseName, Color.Yellow);
-											TShock.Log.ConsoleInfo("{0} has allowed {1} to house: \"{2}\".", ply.UserAccountName, playerID.Name, houseName);
+											TShock.Log.ConsoleInfo("{0} has allowed {1} to house: \"{2}\".", ply.User.Name, playerID.Name, houseName);
 										}
 										else
 											ply.SendErrorMessage("House " + houseName + " not found");
@@ -244,7 +244,7 @@ namespace HousingDistricts
 									if (HouseTools.DeleteUser(houseName, playerID.ID.ToString()))
 									{
 										ply.SendMessage("Deleted user " + playerName + " from " + houseName, Color.Yellow);
-										TShock.Log.ConsoleInfo("{0} has disallowed {1} to house: \"{2}\".", ply.UserAccountName, playerID.Name, houseName);
+										TShock.Log.ConsoleInfo("{0} has disallowed {1} to house: \"{2}\".", ply.User.Name, playerID.Name, houseName);
 									}
 									else
 										ply.SendErrorMessage("House " + houseName + " not found");
@@ -293,7 +293,7 @@ namespace HousingDistricts
 								}
 								HousingDistricts.Houses.Remove(house);
 								ply.SendMessage("House: " + houseName + " deleted", Color.Yellow);
-								TShock.Log.ConsoleInfo("{0} has deleted house: \"{1}\".", ply.UserAccountName, houseName);
+								TShock.Log.ConsoleInfo("{0} has deleted house: \"{1}\".", ply.User.Name, houseName);
 								break;
 							}
 							else
@@ -536,7 +536,7 @@ namespace HousingDistricts
 								{
 									bool locked = HouseTools.ChangeLock(house);
 									ply.SendMessage("House: " + houseName + (locked ? " locked" : " unlocked"), Color.Yellow);
-									TShock.Log.ConsoleInfo("{0} has locked house: \"{1}\".", ply.UserAccountName, houseName);
+									TShock.Log.ConsoleInfo("{0} has locked house: \"{1}\".", ply.User.Name, houseName);
 								}
 								else
 									ply.SendErrorMessage("You do not own House: " + houseName);
