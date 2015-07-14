@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace HousingDistricts
 {
-    [ApiVersion(1, 18)]
+    [ApiVersion(1, 19)]
     public class HousingDistricts : TerrariaPlugin
     {
 		public static HConfigFile HConfig { get; set; }
